@@ -1,16 +1,17 @@
 import { motion } from 'framer-motion';
-import { Trophy, RotateCcw } from 'lucide-react';
+import { Trophy, RotateCcw, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface ScoreboardProps {
-  score: number;
+  group1Score: number;
+  group2Score: number;
   questionsAnswered: number;
   totalQuestions: number;
   isAnimating: boolean;
   onReset: () => void;
 }
 
-const Scoreboard = ({ score, questionsAnswered, totalQuestions, isAnimating, onReset }: ScoreboardProps) => {
+const Scoreboard = ({ group1Score, group2Score, questionsAnswered, totalQuestions, isAnimating, onReset }: ScoreboardProps) => {
   const progress = (questionsAnswered / totalQuestions) * 100;
 
   return (
@@ -20,17 +21,19 @@ const Scoreboard = ({ score, questionsAnswered, totalQuestions, isAnimating, onR
       transition={{ delay: 0.5, type: 'spring' }}
       className="scoreboard rounded-2xl p-6 mb-6"
     >
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-        {/* Score Display */}
-        <div className="flex items-center gap-4">
-          <Trophy className="w-8 h-8 text-secondary animate-float" />
+      <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
+        {/* Group 1 Score */}
+        <div className="flex items-center gap-4 flex-1">
+          <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+            <Users className="w-6 h-6 text-primary" />
+          </div>
           <div className="text-center md:text-left">
-            <p className="text-muted-foreground text-sm uppercase tracking-wider">Score</p>
+            <p className="text-muted-foreground text-sm uppercase tracking-wider">Group 1</p>
             <motion.p
-              key={score}
-              className={`text-4xl md:text-5xl font-display text-secondary ${isAnimating ? 'score-animate' : ''}`}
+              key={`g1-${group1Score}`}
+              className={`text-3xl md:text-4xl font-display text-primary ${isAnimating ? 'score-animate' : ''}`}
             >
-              ${score.toLocaleString()}
+              {group1Score.toLocaleString()} pts
             </motion.p>
           </div>
         </div>
@@ -47,6 +50,22 @@ const Scoreboard = ({ score, questionsAnswered, totalQuestions, isAnimating, onR
               transition={{ duration: 0.5, ease: 'easeOut' }}
               className="h-full bg-gradient-to-r from-primary to-accent rounded-full"
             />
+          </div>
+        </div>
+
+        {/* Group 2 Score */}
+        <div className="flex items-center gap-4 flex-1 justify-end">
+          <div className="text-center md:text-right">
+            <p className="text-muted-foreground text-sm uppercase tracking-wider">Group 2</p>
+            <motion.p
+              key={`g2-${group2Score}`}
+              className={`text-3xl md:text-4xl font-display text-secondary ${isAnimating ? 'score-animate' : ''}`}
+            >
+              {group2Score.toLocaleString()} pts
+            </motion.p>
+          </div>
+          <div className="w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center">
+            <Trophy className="w-6 h-6 text-secondary" />
           </div>
         </div>
 
