@@ -1,23 +1,47 @@
 import { useState, useCallback, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { RotateCcw } from 'lucide-react';
 import { initialCategories, Category, Question } from '@/data/gameData';
 import JeopardyBoard from '@/components/JeopardyBoard';
 import QuestionModal from '@/components/QuestionModal';
 import Scoreboard from '@/components/Scoreboard';
-import HostBanner from '@/components/HostBanner';
+import TimerSetup from '@/components/TimerSetup';
+import CompetitiveResultsModal from '@/components/CompetitiveResultsModal';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { fireConfetti, fireStars } from '@/utils/confetti';
+import { Button } from '@/components/ui/button';
+
+type GamePhase = 'board' | 'timerSetup' | 'question' | 'results';
 
 const JeopardyGame = () => {
   const [categories, setCategories] = useState<Category[]>(initialCategories);
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [group1Score, setGroup1Score] = useState(0);
-  const [group2Score, setGroup2Score] = useState(0);
+  const [gamePhase, setGamePhase] = useState<GamePhase>('board');
+  
+  // Team state
+  const [team1Name, setTeam1Name] = useState('Team 1');
+  const [team2Name, setTeam2Name] = useState('Team 2');
+  const [team1Score, setTeam1Score] = useState(0);
+  const [team2Score, setTeam2Score] = useState(0);
+  const [team1Streak, setTeam1Streak] = useState(0);
+  const [team2Streak, setTeam2Streak] = useState(0);
+  
+  // Animation state
   const [isScoreAnimating, setIsScoreAnimating] = useState(false);
-  const [lastResult, setLastResult] = useState<'correct' | 'incorrect' | null>(null);
-  const [pointsEarned, setPointsEarned] = useState(0);
+  const [lastScoreChange, setLastScoreChange] = useState<{ team1: number; team2: number } | null>(null);
+  
+  // Timer state
+  const [timerDuration, setTimerDuration] = useState(20);
+  
+  // Results state
+  const [resultData, setResultData] = useState<{
+    winner: 'team1' | 'team2' | 'both' | 'none';
+    team1Change: number;
+    team2Change: number;
+    team1NewScore: number;
+    team2NewScore: number;
+  } | null>(null);
   
   const { playSelect, playCorrect, playWrong, playHover, playReveal } = useSoundEffects();
 
@@ -31,12 +55,84 @@ const JeopardyGame = () => {
     playSelect();
     setSelectedQuestion(question);
     setSelectedCategory(categoryName);
-    setIsModalOpen(true);
-    setTimeout(() => playReveal(), 300);
-  }, [playSelect, playReveal]);
+    setGamePhase('timerSetup');
+  }, [playSelect]);
 
-  const handleAnswer = useCallback((winner: 'group1' | 'group2' | 'both' | 'none') => {
+  const handleStartQuestion = useCallback(() => {
+    playReveal();
+    setGamePhase('question');
+  }, [playReveal]);
+
+  const handleTimerEnd = useCallback(() => {
+    setGamePhase('results');
+  }, []);
+
+  const handleSelectWinner = useCallback((winner: 'team1' | 'team2' | 'both' | 'none') => {
     if (!selectedQuestion) return;
+
+    const points = selectedQuestion.value;
+    let team1Change = 0;
+    let team2Change = 0;
+    let newTeam1Score = team1Score;
+    let newTeam2Score = team2Score;
+    let newTeam1Streak = team1Streak;
+    let newTeam2Streak = team2Streak;
+
+    switch (winner) {
+      case 'team1':
+        team1Change = points;
+        team2Change = -points;
+        newTeam1Score = team1Score + points;
+        newTeam2Score = team2Score - points;
+        newTeam1Streak = team1Streak + 1;
+        newTeam2Streak = 0;
+        playCorrect();
+        fireConfetti();
+        break;
+      case 'team2':
+        team1Change = -points;
+        team2Change = points;
+        newTeam1Score = team1Score - points;
+        newTeam2Score = team2Score + points;
+        newTeam1Streak = 0;
+        newTeam2Streak = team2Streak + 1;
+        playCorrect();
+        fireConfetti();
+        break;
+      case 'both':
+        team1Change = points;
+        team2Change = points;
+        newTeam1Score = team1Score + points;
+        newTeam2Score = team2Score + points;
+        newTeam1Streak = team1Streak + 1;
+        newTeam2Streak = team2Streak + 1;
+        playCorrect();
+        fireConfetti();
+        fireStars();
+        break;
+      case 'none':
+        playWrong();
+        newTeam1Streak = 0;
+        newTeam2Streak = 0;
+        break;
+    }
+
+    // Update scores
+    setTeam1Score(newTeam1Score);
+    setTeam2Score(newTeam2Score);
+    setTeam1Streak(newTeam1Streak);
+    setTeam2Streak(newTeam2Streak);
+    setLastScoreChange({ team1: team1Change, team2: team2Change });
+    setIsScoreAnimating(true);
+
+    // Set result data
+    setResultData({
+      winner,
+      team1Change,
+      team2Change,
+      team1NewScore: newTeam1Score,
+      team2NewScore: newTeam2Score,
+    });
 
     // Mark question as answered
     setCategories(prev => prev.map(cat => ({
@@ -46,50 +142,33 @@ const JeopardyGame = () => {
       ),
     })));
 
-    if (winner !== 'none') {
-      playCorrect();
-      setLastResult('correct');
-      setPointsEarned(selectedQuestion.value);
-      setIsScoreAnimating(true);
-      
-      // Award points based on winner
-      if (winner === 'group1' || winner === 'both') {
-        setGroup1Score(prev => prev + selectedQuestion.value);
-      }
-      if (winner === 'group2' || winner === 'both') {
-        setGroup2Score(prev => prev + selectedQuestion.value);
-      }
-      
-      // Fire celebration effects
-      fireConfetti();
-      setTimeout(() => fireStars(), 200);
-    } else {
-      playWrong();
-      setLastResult('incorrect');
-      setPointsEarned(0);
-    }
-
-    setIsModalOpen(false);
-    setSelectedQuestion(null);
-
-    // Reset animation flag
     setTimeout(() => setIsScoreAnimating(false), 500);
-  }, [selectedQuestion, playCorrect, playWrong]);
+  }, [selectedQuestion, team1Score, team2Score, team1Streak, team2Streak, playCorrect, playWrong]);
+
+  const handleCloseResults = useCallback(() => {
+    setGamePhase('board');
+    setSelectedQuestion(null);
+    setResultData(null);
+    setLastScoreChange(null);
+  }, []);
+
+  const handleCancelTimerSetup = useCallback(() => {
+    setGamePhase('board');
+    setSelectedQuestion(null);
+  }, []);
 
   const handleReset = useCallback(() => {
     setCategories(initialCategories.map(cat => ({
       ...cat,
       questions: cat.questions.map(q => ({ ...q, answered: false })),
     })));
-    setGroup1Score(0);
-    setGroup2Score(0);
-    setLastResult(null);
-    setPointsEarned(0);
-  }, []);
-
-  const handleCloseModal = useCallback(() => {
-    setIsModalOpen(false);
-    setSelectedQuestion(null);
+    setTeam1Score(0);
+    setTeam2Score(0);
+    setTeam1Streak(0);
+    setTeam2Streak(0);
+    setLastScoreChange(null);
+    setResultData(null);
+    setGamePhase('board');
   }, []);
 
   // Check for game completion
@@ -103,8 +182,8 @@ const JeopardyGame = () => {
   }, [questionsAnswered, totalQuestions]);
 
   const getWinner = () => {
-    if (group1Score > group2Score) return 'Group 1';
-    if (group2Score > group1Score) return 'Group 2';
+    if (team1Score > team2Score) return team1Name;
+    if (team2Score > team1Score) return team2Name;
     return 'Tie';
   };
 
@@ -124,9 +203,9 @@ const JeopardyGame = () => {
           initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-6"
+          className="text-center mb-4"
         >
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-display text-foreground text-glow-gold tracking-wider">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-display text-foreground text-glow-gold tracking-wider">
             QUIZ SHOWDOWN
           </h1>
           <motion.div
@@ -137,18 +216,35 @@ const JeopardyGame = () => {
           />
         </motion.header>
 
-        {/* Host Banner */}
-        <HostBanner lastResult={lastResult} pointsEarned={pointsEarned} />
-
         {/* Scoreboard */}
         <Scoreboard
-          group1Score={group1Score}
-          group2Score={group2Score}
-          questionsAnswered={questionsAnswered}
-          totalQuestions={totalQuestions}
+          team1Name={team1Name}
+          team2Name={team2Name}
+          team1Score={team1Score}
+          team2Score={team2Score}
+          team1Streak={team1Streak}
+          team2Streak={team2Streak}
+          onTeam1NameChange={setTeam1Name}
+          onTeam2NameChange={setTeam2Name}
           isAnimating={isScoreAnimating}
-          onReset={handleReset}
+          lastScoreChange={lastScoreChange}
         />
+
+        {/* Progress & Reset */}
+        <div className="flex items-center justify-between mb-4">
+          <p className="text-muted-foreground text-sm">
+            {questionsAnswered} of {totalQuestions} questions answered
+          </p>
+          <Button
+            onClick={handleReset}
+            variant="outline"
+            size="sm"
+            className="border-muted-foreground/30 text-muted-foreground hover:border-secondary hover:text-secondary"
+          >
+            <RotateCcw className="w-4 h-4 mr-2" />
+            Reset Game
+          </Button>
+        </div>
 
         {/* Game Board */}
         <JeopardyBoard
@@ -157,17 +253,40 @@ const JeopardyGame = () => {
           onHover={playHover}
         />
 
-        {/* Question Modal */}
+        {/* Timer Setup Modal */}
+        <TimerSetup
+          isOpen={gamePhase === 'timerSetup'}
+          question={selectedQuestion}
+          categoryName={selectedCategory}
+          timerDuration={timerDuration}
+          onTimerChange={setTimerDuration}
+          onStart={handleStartQuestion}
+          onCancel={handleCancelTimerSetup}
+        />
+
+        {/* Question Modal with Timer */}
         <QuestionModal
           question={selectedQuestion}
-          isOpen={isModalOpen}
-          onClose={handleCloseModal}
-          onAnswer={handleAnswer}
+          isOpen={gamePhase === 'question'}
           categoryName={selectedCategory}
+          timerDuration={timerDuration}
+          onTimerEnd={handleTimerEnd}
+          onForceEnd={handleTimerEnd}
+        />
+
+        {/* Competitive Results Modal */}
+        <CompetitiveResultsModal
+          isOpen={gamePhase === 'results'}
+          team1Name={team1Name}
+          team2Name={team2Name}
+          pointsValue={selectedQuestion?.value || 0}
+          onSelectWinner={handleSelectWinner}
+          result={resultData}
+          onClose={handleCloseResults}
         />
 
         {/* Game Complete Message */}
-        {questionsAnswered === totalQuestions && questionsAnswered > 0 && (
+        {questionsAnswered === totalQuestions && questionsAnswered > 0 && gamePhase === 'board' && (
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -180,7 +299,7 @@ const JeopardyGame = () => {
               Winner: <span className="text-secondary font-display">{getWinner()}</span>
             </p>
             <p className="text-lg text-muted-foreground mt-1">
-              Group 1: {group1Score.toLocaleString()} pts | Group 2: {group2Score.toLocaleString()} pts
+              {team1Name}: {team1Score} pts | {team2Name}: {team2Score} pts
             </p>
           </motion.div>
         )}
