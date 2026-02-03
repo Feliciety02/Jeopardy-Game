@@ -13,7 +13,8 @@ const JeopardyGame = () => {
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [score, setScore] = useState(0);
+  const [group1Score, setGroup1Score] = useState(0);
+  const [group2Score, setGroup2Score] = useState(0);
   const [isScoreAnimating, setIsScoreAnimating] = useState(false);
   const [lastResult, setLastResult] = useState<'correct' | 'incorrect' | null>(null);
   const [pointsEarned, setPointsEarned] = useState(0);
@@ -34,7 +35,7 @@ const JeopardyGame = () => {
     setTimeout(() => playReveal(), 300);
   }, [playSelect, playReveal]);
 
-  const handleAnswer = useCallback((correct: boolean) => {
+  const handleAnswer = useCallback((winner: 'group1' | 'group2' | 'both' | 'none') => {
     if (!selectedQuestion) return;
 
     // Mark question as answered
@@ -45,12 +46,19 @@ const JeopardyGame = () => {
       ),
     })));
 
-    if (correct) {
+    if (winner !== 'none') {
       playCorrect();
-      setScore(prev => prev + selectedQuestion.value);
-      setPointsEarned(selectedQuestion.value);
       setLastResult('correct');
+      setPointsEarned(selectedQuestion.value);
       setIsScoreAnimating(true);
+      
+      // Award points based on winner
+      if (winner === 'group1' || winner === 'both') {
+        setGroup1Score(prev => prev + selectedQuestion.value);
+      }
+      if (winner === 'group2' || winner === 'both') {
+        setGroup2Score(prev => prev + selectedQuestion.value);
+      }
       
       // Fire celebration effects
       fireConfetti();
@@ -73,7 +81,8 @@ const JeopardyGame = () => {
       ...cat,
       questions: cat.questions.map(q => ({ ...q, answered: false })),
     })));
-    setScore(0);
+    setGroup1Score(0);
+    setGroup2Score(0);
     setLastResult(null);
     setPointsEarned(0);
   }, []);
@@ -92,6 +101,12 @@ const JeopardyGame = () => {
       }, 500);
     }
   }, [questionsAnswered, totalQuestions]);
+
+  const getWinner = () => {
+    if (group1Score > group2Score) return 'Group 1';
+    if (group2Score > group1Score) return 'Group 2';
+    return 'Tie';
+  };
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-6 lg:p-8 overflow-hidden">
@@ -112,7 +127,7 @@ const JeopardyGame = () => {
           className="text-center mb-6"
         >
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-display text-foreground text-glow-gold tracking-wider">
-            JEOPARDY!
+            QUIZ SHOWDOWN
           </h1>
           <motion.div
             initial={{ scaleX: 0 }}
@@ -127,7 +142,8 @@ const JeopardyGame = () => {
 
         {/* Scoreboard */}
         <Scoreboard
-          score={score}
+          group1Score={group1Score}
+          group2Score={group2Score}
           questionsAnswered={questionsAnswered}
           totalQuestions={totalQuestions}
           isAnimating={isScoreAnimating}
@@ -161,7 +177,10 @@ const JeopardyGame = () => {
               🎉 GAME COMPLETE! 🎉
             </h2>
             <p className="text-xl text-foreground mt-2">
-              Final Score: <span className="text-secondary font-display">${score.toLocaleString()}</span>
+              Winner: <span className="text-secondary font-display">{getWinner()}</span>
+            </p>
+            <p className="text-lg text-muted-foreground mt-1">
+              Group 1: {group1Score.toLocaleString()} pts | Group 2: {group2Score.toLocaleString()} pts
             </p>
           </motion.div>
         )}

@@ -38,7 +38,7 @@ const GameTile = ({ question, categoryIndex, rowIndex, onSelect, onHover }: Game
     >
       {!question.answered && (
         <span className="point-value text-3xl md:text-4xl lg:text-5xl font-display">
-          ${question.value}
+          {question.value}
         </span>
       )}
     </motion.button>

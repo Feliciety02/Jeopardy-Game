@@ -8,7 +8,7 @@ interface QuestionModalProps {
   question: Question | null;
   isOpen: boolean;
   onClose: () => void;
-  onAnswer: (correct: boolean) => void;
+  onAnswer: (winner: 'group1' | 'group2' | 'both' | 'none') => void;
   categoryName: string;
 }
 
@@ -75,7 +75,7 @@ const QuestionModal = ({ question, isOpen, onClose, onAnswer, categoryName }: Qu
             >
               <span className="text-accent text-lg font-medium">{categoryName}</span>
               <span className="mx-3 text-muted-foreground">•</span>
-              <span className="text-secondary text-lg font-display">${question.value}</span>
+              <span className="text-secondary text-lg font-display">{question.value} pts</span>
             </motion.div>
 
             {/* Host Prompt */}
@@ -140,25 +140,41 @@ const QuestionModal = ({ question, isOpen, onClose, onAnswer, categoryName }: Qu
                     </p>
                   </motion.div>
 
-                  {/* Answer Buttons */}
+                  {/* Winner Buttons */}
                   <motion.div
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.2 }}
-                    className="flex flex-col sm:flex-row gap-4 justify-center"
+                    className="space-y-4"
                   >
-                    <Button
-                      onClick={() => onAnswer(true)}
-                      className="answer-btn-correct text-xl font-display px-10 py-6 hover:scale-105 transition-transform"
-                    >
-                      ✓ CORRECT
-                    </Button>
-                    <Button
-                      onClick={() => onAnswer(false)}
-                      className="answer-btn-wrong text-xl font-display px-10 py-6 hover:scale-105 transition-transform"
-                    >
-                      ✗ WRONG
-                    </Button>
+                    <p className="text-muted-foreground text-sm mb-4">Who answered correctly?</p>
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                      <Button
+                        onClick={() => onAnswer('group1')}
+                        className="bg-primary hover:bg-primary/80 text-primary-foreground text-lg font-display px-8 py-6 hover:scale-105 transition-transform"
+                      >
+                        GROUP 1
+                      </Button>
+                      <Button
+                        onClick={() => onAnswer('group2')}
+                        className="bg-secondary hover:bg-secondary/80 text-secondary-foreground text-lg font-display px-8 py-6 hover:scale-105 transition-transform"
+                      >
+                        GROUP 2
+                      </Button>
+                      <Button
+                        onClick={() => onAnswer('both')}
+                        className="bg-accent hover:bg-accent/80 text-accent-foreground text-lg font-display px-8 py-6 hover:scale-105 transition-transform"
+                      >
+                        BOTH
+                      </Button>
+                      <Button
+                        onClick={() => onAnswer('none')}
+                        variant="outline"
+                        className="border-2 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground text-lg font-display px-8 py-6 hover:scale-105 transition-transform"
+                      >
+                        NEITHER
+                      </Button>
+                    </div>
                   </motion.div>
                 </motion.div>
               )}
