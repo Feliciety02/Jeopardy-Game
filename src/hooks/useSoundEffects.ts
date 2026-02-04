@@ -1,6 +1,6 @@
 import { useCallback, useRef } from 'react';
 
-type SoundType = 'select' | 'correct' | 'wrong' | 'reveal' | 'hover';
+type SoundType = 'select' | 'correct' | 'wrong' | 'reveal' | 'hover' | 'tick' | 'urgentTick';
 
 const FREQUENCIES: Record<SoundType, number[]> = {
   select: [440, 554, 659],
@@ -8,6 +8,8 @@ const FREQUENCIES: Record<SoundType, number[]> = {
   wrong: [200, 150],
   reveal: [330, 440, 554],
   hover: [880],
+  tick: [800],
+  urgentTick: [1000, 1200],
 };
 
 const DURATIONS: Record<SoundType, number> = {
@@ -16,6 +18,8 @@ const DURATIONS: Record<SoundType, number> = {
   wrong: 0.2,
   reveal: 0.12,
   hover: 0.05,
+  tick: 0.05,
+  urgentTick: 0.08,
 };
 
 export const useSoundEffects = () => {
@@ -41,13 +45,14 @@ export const useSoundEffects = () => {
       gainNode.connect(ctx.destination);
 
       oscillator.frequency.value = freq;
-      oscillator.type = type === 'wrong' ? 'sawtooth' : 'sine';
+      oscillator.type = type === 'wrong' ? 'sawtooth' : type === 'urgentTick' ? 'square' : 'sine';
 
-      const startTime = ctx.currentTime + index * (duration * 0.8);
+      const startTime = ctx.currentTime + index * (duration * 0.5);
       const endTime = startTime + duration;
 
+      const volume = type === 'tick' ? 0.1 : type === 'urgentTick' ? 0.2 : 0.15;
       gainNode.gain.setValueAtTime(0, startTime);
-      gainNode.gain.linearRampToValueAtTime(0.15, startTime + 0.01);
+      gainNode.gain.linearRampToValueAtTime(volume, startTime + 0.01);
       gainNode.gain.exponentialRampToValueAtTime(0.001, endTime);
 
       oscillator.start(startTime);
@@ -60,6 +65,8 @@ export const useSoundEffects = () => {
   const playWrong = useCallback(() => playSound('wrong'), [playSound]);
   const playReveal = useCallback(() => playSound('reveal'), [playSound]);
   const playHover = useCallback(() => playSound('hover'), [playSound]);
+  const playTick = useCallback(() => playSound('tick'), [playSound]);
+  const playUrgentTick = useCallback(() => playSound('urgentTick'), [playSound]);
 
   return {
     playSelect,
@@ -67,5 +74,7 @@ export const useSoundEffects = () => {
     playWrong,
     playReveal,
     playHover,
+    playTick,
+    playUrgentTick,
   };
 };

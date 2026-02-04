@@ -2,7 +2,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, Zap } from 'lucide-react';
 import { Question } from '@/data/gameData';
 import { Button } from '@/components/ui/button';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { useSoundEffects } from '@/hooks/useSoundEffects';
 
 interface QuestionModalProps {
   question: Question | null;
@@ -23,13 +24,30 @@ const QuestionModal = ({
 }: QuestionModalProps) => {
   const [timeLeft, setTimeLeft] = useState(timerDuration);
   const [showAnswer, setShowAnswer] = useState(false);
+  const { playTick, playUrgentTick } = useSoundEffects();
+  const prevTimeRef = useRef(timerDuration);
 
   useEffect(() => {
     if (isOpen && question) {
       setTimeLeft(timerDuration);
       setShowAnswer(false);
+      prevTimeRef.current = timerDuration;
     }
   }, [isOpen, question, timerDuration]);
+
+  // Play tick sounds
+  useEffect(() => {
+    if (!isOpen || showAnswer) return;
+    
+    if (timeLeft !== prevTimeRef.current && timeLeft > 0) {
+      if (timeLeft <= 10) {
+        playUrgentTick();
+      } else {
+        playTick();
+      }
+    }
+    prevTimeRef.current = timeLeft;
+  }, [timeLeft, isOpen, showAnswer, playTick, playUrgentTick]);
 
   useEffect(() => {
     if (!isOpen || timeLeft <= 0) return;
@@ -57,7 +75,8 @@ const QuestionModal = ({
   if (!question) return null;
 
   const progressPercent = (timeLeft / timerDuration) * 100;
-  const isLowTime = timeLeft <= 5;
+  const isLowTime = timeLeft <= 10;
+  const isCriticalTime = timeLeft <= 5;
 
   return (
     <AnimatePresence>
@@ -111,22 +130,38 @@ const QuestionModal = ({
             {/* Timer */}
             <motion.div
               initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.3, type: 'spring' }}
-              className={`mb-10 inline-flex items-center gap-3 px-8 py-4 rounded-2xl border-4 ${
-                isLowTime
-                  ? 'bg-red-500/20 border-red-500 animate-pulse'
+              animate={{ 
+                scale: isCriticalTime ? [1, 1.1, 1] : 1,
+              }}
+              transition={{ 
+                delay: 0.3, 
+                type: 'spring',
+                scale: isCriticalTime ? { duration: 0.5, repeat: Infinity } : undefined
+              }}
+              className={`mb-10 inline-flex items-center gap-3 px-8 py-4 rounded-2xl border-4 transition-all duration-300 ${
+                isCriticalTime
+                  ? 'bg-red-600/40 border-red-500 shadow-[0_0_30px_rgba(239,68,68,0.6)]'
+                  : isLowTime
+                  ? 'bg-red-500/20 border-red-500'
                   : 'bg-card/80 border-accent'
               }`}
             >
-              <Clock className={`w-10 h-10 ${isLowTime ? 'text-red-400' : 'text-accent'}`} />
-              <span
+              <motion.div
+                animate={isCriticalTime ? { rotate: [0, -10, 10, -10, 10, 0] } : {}}
+                transition={{ duration: 0.5, repeat: Infinity }}
+              >
+                <Clock className={`w-10 h-10 ${isCriticalTime ? 'text-red-300' : isLowTime ? 'text-red-400' : 'text-accent'}`} />
+              </motion.div>
+              <motion.span
+                key={timeLeft}
+                initial={{ scale: 1.3, opacity: 0.7 }}
+                animate={{ scale: 1, opacity: 1 }}
                 className={`text-6xl font-display ${
-                  isLowTime ? 'text-red-400' : 'text-foreground'
+                  isCriticalTime ? 'text-red-300 animate-pulse' : isLowTime ? 'text-red-400' : 'text-foreground'
                 }`}
               >
                 {timeLeft}
-              </span>
+              </motion.span>
             </motion.div>
 
             {/* Question */}
