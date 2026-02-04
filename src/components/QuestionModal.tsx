@@ -49,6 +49,15 @@ const QuestionModal = ({
     prevTimeRef.current = timeLeft;
   }, [timeLeft, isOpen, showAnswer, playTick, playUrgentTick]);
 
+  // Handle time up
+  useEffect(() => {
+    if (timeLeft === 0 && isOpen && !showAnswer) {
+      playTimeUp();
+      setShowAnswer(true);
+      setTimeout(onTimerEnd, 1500);
+    }
+  }, [timeLeft, isOpen, showAnswer, playTimeUp, onTimerEnd]);
+
   useEffect(() => {
     if (!isOpen || timeLeft <= 0) return;
 
@@ -56,9 +65,6 @@ const QuestionModal = ({
       setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          playTimeUp();
-          setShowAnswer(true);
-          setTimeout(onTimerEnd, 1500);
           return 0;
         }
         return prev - 1;
@@ -66,7 +72,7 @@ const QuestionModal = ({
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [isOpen, timeLeft, onTimerEnd]);
+  }, [isOpen, timeLeft]);
 
   const handleForceEnd = useCallback(() => {
     setShowAnswer(true);
