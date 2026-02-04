@@ -24,7 +24,7 @@ const QuestionModal = ({
 }: QuestionModalProps) => {
   const [timeLeft, setTimeLeft] = useState(timerDuration);
   const [showAnswer, setShowAnswer] = useState(false);
-  const { playTick, playUrgentTick } = useSoundEffects();
+  const { playTick, playUrgentTick, playTimeUp } = useSoundEffects();
   const prevTimeRef = useRef(timerDuration);
 
   useEffect(() => {
@@ -56,6 +56,7 @@ const QuestionModal = ({
       setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
+          playTimeUp();
           setShowAnswer(true);
           setTimeout(onTimerEnd, 1500);
           return 0;
