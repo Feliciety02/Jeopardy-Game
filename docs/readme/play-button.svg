@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="216" height="52" viewBox="0 0 216 52" role="img" aria-label="Play locally">
+  <rect width="216" height="52" rx="26" fill="#1440b8"/>
+  <rect x="1.5" y="1.5" width="213" height="49" rx="24.5" fill="none" stroke="#ffc800" stroke-width="2"/>
+  <path d="M40 16 L56 26 L40 36 Z" fill="#ffc800"/>
+  <text x="70" y="32" font-family="'Segoe UI', system-ui, -apple-system, Helvetica, Arial, sans-serif" font-size="17" font-weight="700" fill="#ffffff">Play locally</text>
+</svg>
