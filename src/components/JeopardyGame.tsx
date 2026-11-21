@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { RotateCcw, Undo2, Volume2, VolumeX, Trophy } from 'lucide-react';
 import { initialCategories, Question } from '@/data/gameData';
 import JeopardyBoard from '@/components/JeopardyBoard';
+import Logo from '@/components/Logo';
 import QuestionModal from '@/components/QuestionModal';
 import Scoreboard from '@/components/Scoreboard';
 import TimerSetup from '@/components/TimerSetup';
@@ -239,9 +240,7 @@ const JeopardyGame = () => {
           className="mb-5 sm:mb-7 flex items-center justify-between gap-3"
         >
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-            <div className="grid h-9 w-9 sm:h-11 sm:w-11 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground font-display text-xl sm:text-2xl font-extrabold">
-              Q
-            </div>
+            <Logo className="h-9 w-9 sm:h-11 sm:w-11 shrink-0" />
             <div className="min-w-0">
               <h1 className="font-display text-lg sm:text-2xl md:text-3xl font-extrabold leading-none truncate">
                 Quiz Showdown

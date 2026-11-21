@@ -1,4 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="15" fill="#d4ff2e"/>
-  <text x="32" y="46" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="38" fill="#0a0a14">Q</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Quiz Showdown">
+  <rect width="128" height="128" rx="30" fill="#0a0a14"/>
+  <!-- the Q's bowl is a countdown ring with a gap where the tail sits -->
+  <circle cx="58" cy="58" r="31" fill="none" stroke="#f7f4ee" stroke-width="14" stroke-linecap="round"
+          stroke-dasharray="158 36.8" transform="rotate(76 58 58)"/>
+  <!-- the tail is a single lit board tile -->
+  <rect x="76" y="76" width="30" height="30" rx="8" fill="#d4ff2e"/>
 </svg>

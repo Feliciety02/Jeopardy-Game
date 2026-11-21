@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/readme/banner.svg" width="1200" alt="Quiz Showdown logo and name on a dark dotted stage lit coral and sky blue, with a small game board, a lime highlighted tile, and two team scores">
+  <img src="docs/readme/banner.svg" width="1200" alt="The Quiz Showdown logo, a Q whose bowl is a countdown ring and whose tail is a lit board tile, beside a minimal quiz board with a category row and 100, 500 and 1000 point tiles">
 </p>
 
 <h1 align="center">Quiz Showdown</h1>
