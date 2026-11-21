@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useSyncExternalStore } from 'react';
 
 type SoundType = 'select' | 'correct' | 'wrong' | 'reveal' | 'hover' | 'tick' | 'urgentTick' | 'timeUp';
 
@@ -24,52 +24,98 @@ const DURATIONS: Record<SoundType, number> = {
   timeUp: 0.15,
 };
 
+const VOLUMES: Partial<Record<SoundType, number>> = {
+  hover: 0.05,
+  tick: 0.1,
+  urgentTick: 0.2,
+  timeUp: 0.3,
+};
+
+const MUTE_KEY = 'quiz-showdown:muted';
+
+// One shared AudioContext and mute flag for the whole app.
+let audioContext: AudioContext | null = null;
+let muted = (() => {
+  try {
+    return localStorage.getItem(MUTE_KEY) === '1';
+  } catch {
+    return false;
+  }
+})();
+const listeners = new Set<() => void>();
+
+const getAudioContext = () => {
+  if (!audioContext) {
+    const Ctor = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    audioContext = new Ctor();
+  }
+  // Browsers start the context suspended until a user gesture.
+  if (audioContext.state === 'suspended') void audioContext.resume();
+  return audioContext;
+};
+
+export const setMuted = (value: boolean) => {
+  muted = value;
+  try {
+    localStorage.setItem(MUTE_KEY, value ? '1' : '0');
+  } catch {
+    /* storage unavailable */
+  }
+  listeners.forEach((l) => l());
+};
+
+export const useMuted = () =>
+  useSyncExternalStore(
+    (cb) => {
+      listeners.add(cb);
+      return () => listeners.delete(cb);
+    },
+    () => muted,
+  );
+
+const playSound = (type: SoundType) => {
+  if (muted) return;
+  let ctx: AudioContext;
+  try {
+    ctx = getAudioContext();
+  } catch {
+    return;
+  }
+  const frequencies = FREQUENCIES[type];
+  const duration = DURATIONS[type];
+  const volume = VOLUMES[type] ?? 0.15;
+
+  frequencies.forEach((freq, index) => {
+    const oscillator = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(ctx.destination);
+
+    oscillator.frequency.value = freq;
+    oscillator.type = type === 'wrong' ? 'sawtooth' : type === 'urgentTick' || type === 'timeUp' ? 'square' : 'sine';
+
+    const startTime = ctx.currentTime + index * (type === 'timeUp' ? 0.12 : duration * 0.5);
+    const endTime = startTime + duration;
+
+    gainNode.gain.setValueAtTime(0, startTime);
+    gainNode.gain.linearRampToValueAtTime(volume, startTime + 0.01);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, endTime);
+
+    oscillator.start(startTime);
+    oscillator.stop(endTime);
+  });
+};
+
 export const useSoundEffects = () => {
-  const audioContextRef = useRef<AudioContext | null>(null);
-
-  const getAudioContext = useCallback(() => {
-    if (!audioContextRef.current) {
-      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-    }
-    return audioContextRef.current;
-  }, []);
-
-  const playSound = useCallback((type: SoundType) => {
-    const ctx = getAudioContext();
-    const frequencies = FREQUENCIES[type];
-    const duration = DURATIONS[type];
-
-    frequencies.forEach((freq, index) => {
-      const oscillator = ctx.createOscillator();
-      const gainNode = ctx.createGain();
-
-      oscillator.connect(gainNode);
-      gainNode.connect(ctx.destination);
-
-      oscillator.frequency.value = freq;
-      oscillator.type = type === 'wrong' ? 'sawtooth' : type === 'urgentTick' || type === 'timeUp' ? 'square' : 'sine';
-
-      const startTime = ctx.currentTime + index * (type === 'timeUp' ? 0.12 : duration * 0.5);
-      const endTime = startTime + duration;
-
-      const volume = type === 'tick' ? 0.1 : type === 'urgentTick' ? 0.2 : type === 'timeUp' ? 0.3 : 0.15;
-      gainNode.gain.setValueAtTime(0, startTime);
-      gainNode.gain.linearRampToValueAtTime(volume, startTime + 0.01);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, endTime);
-
-      oscillator.start(startTime);
-      oscillator.stop(endTime);
-    });
-  }, [getAudioContext]);
-
-  const playSelect = useCallback(() => playSound('select'), [playSound]);
-  const playCorrect = useCallback(() => playSound('correct'), [playSound]);
-  const playWrong = useCallback(() => playSound('wrong'), [playSound]);
-  const playReveal = useCallback(() => playSound('reveal'), [playSound]);
-  const playHover = useCallback(() => playSound('hover'), [playSound]);
-  const playTick = useCallback(() => playSound('tick'), [playSound]);
-  const playUrgentTick = useCallback(() => playSound('urgentTick'), [playSound]);
-  const playTimeUp = useCallback(() => playSound('timeUp'), [playSound]);
+  const playSelect = useCallback(() => playSound('select'), []);
+  const playCorrect = useCallback(() => playSound('correct'), []);
+  const playWrong = useCallback(() => playSound('wrong'), []);
+  const playReveal = useCallback(() => playSound('reveal'), []);
+  const playHover = useCallback(() => playSound('hover'), []);
+  const playTick = useCallback(() => playSound('tick'), []);
+  const playUrgentTick = useCallback(() => playSound('urgentTick'), []);
+  const playTimeUp = useCallback(() => playSound('timeUp'), []);
 
   return {
     playSelect,
