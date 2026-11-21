@@ -16,7 +16,10 @@ const JeopardyBoard = ({ categories, onSelectQuestion, onHover }: JeopardyBoardP
       animate={{ opacity: 1 }}
       className="w-full max-w-7xl mx-auto"
     >
-      <div className="grid grid-cols-6 gap-2 md:gap-3">
+      <div
+        className="grid gap-1.5 sm:gap-2 md:gap-3"
+        style={{ gridTemplateColumns: `repeat(${categories.length}, minmax(0, 1fr))` }}
+      >
         {/* Category Headers */}
         {categories.map((category, catIndex) => (
           <CategoryHeader

@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion';
-import { Trophy, Flame, Crown } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Flame, Crown } from "lucide-react";
 
 interface ScoreboardProps {
   team1Name: string;
@@ -38,10 +37,10 @@ const Scoreboard = ({
       transition={{ delay: 0.3, type: 'spring' }}
       className="mb-6"
     >
-      <div className="grid grid-cols-3 gap-4 items-center">
+      <div className="grid grid-cols-[1fr_auto_1fr] gap-2 sm:gap-4 items-center">
         {/* Team 1 */}
         <motion.div
-          className={`relative p-6 rounded-2xl border-4 transition-all ${
+          className={`relative p-3 sm:p-6 rounded-2xl border-4 transition-all ${
             team1Leading
               ? 'bg-primary/20 border-primary shadow-lg shadow-primary/30'
               : 'bg-card/80 border-muted'
@@ -56,7 +55,7 @@ const Scoreboard = ({
               type="text"
               value={team1Name}
               onChange={(e) => onTeam1NameChange(e.target.value)}
-              className="bg-transparent text-center text-xl font-display text-foreground w-full border-b-2 border-transparent hover:border-primary/50 focus:border-primary focus:outline-none transition-colors"
+              className="bg-transparent text-center text-base sm:text-xl font-display text-foreground w-full border-b-2 border-transparent hover:border-primary/50 focus:border-primary focus:outline-none transition-colors"
             />
             
             <div className="relative">
@@ -64,7 +63,7 @@ const Scoreboard = ({
                 key={team1Score}
                 initial={isAnimating ? { scale: 1.3 } : false}
                 animate={{ scale: 1 }}
-                className={`text-5xl md:text-6xl font-display mt-2 ${
+                className={`text-3xl sm:text-5xl md:text-6xl font-display mt-2 tabular-nums ${
                   team1Leading ? 'text-primary' : 'text-foreground'
                 }`}
               >
@@ -105,13 +104,13 @@ const Scoreboard = ({
           <motion.div
             animate={{ scale: [1, 1.1, 1] }}
             transition={{ repeat: Infinity, duration: 2 }}
-            className="text-4xl font-display text-secondary text-glow-gold"
+            className="text-2xl sm:text-4xl font-display text-secondary text-glow-gold"
           >
             VS
           </motion.div>
           
           {!isTied && (
-            <p className="text-sm text-muted-foreground mt-2">
+            <p className="text-xs sm:text-sm text-muted-foreground mt-2 hidden sm:block">
               {team1Leading ? team1Name : team2Name} leads by{' '}
               <span className="text-secondary font-bold">
                 {Math.abs(team1Score - team2Score)}
@@ -125,7 +124,7 @@ const Scoreboard = ({
 
         {/* Team 2 */}
         <motion.div
-          className={`relative p-6 rounded-2xl border-4 transition-all ${
+          className={`relative p-3 sm:p-6 rounded-2xl border-4 transition-all ${
             team2Leading
               ? 'bg-secondary/20 border-secondary shadow-lg shadow-secondary/30'
               : 'bg-card/80 border-muted'
@@ -140,7 +139,7 @@ const Scoreboard = ({
               type="text"
               value={team2Name}
               onChange={(e) => onTeam2NameChange(e.target.value)}
-              className="bg-transparent text-center text-xl font-display text-foreground w-full border-b-2 border-transparent hover:border-secondary/50 focus:border-secondary focus:outline-none transition-colors"
+              className="bg-transparent text-center text-base sm:text-xl font-display text-foreground w-full border-b-2 border-transparent hover:border-secondary/50 focus:border-secondary focus:outline-none transition-colors"
             />
             
             <div className="relative">
@@ -148,7 +147,7 @@ const Scoreboard = ({
                 key={team2Score}
                 initial={isAnimating ? { scale: 1.3 } : false}
                 animate={{ scale: 1 }}
-                className={`text-5xl md:text-6xl font-display mt-2 ${
+                className={`text-3xl sm:text-5xl md:text-6xl font-display mt-2 tabular-nums ${
                   team2Leading ? 'text-secondary' : 'text-foreground'
                 }`}
               >

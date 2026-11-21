@@ -35,9 +35,10 @@ const GameTile = ({ question, categoryIndex, rowIndex, onSelect, onHover }: Game
         ${question.answered ? 'answered' : 'pulse-glow'}
       `}
       disabled={question.answered}
+      aria-label={question.answered ? `${question.value} points, already played` : `${question.value} points`}
     >
       {!question.answered && (
-        <span className="point-value text-3xl md:text-4xl lg:text-5xl font-display">
+        <span className="point-value text-lg sm:text-3xl md:text-4xl lg:text-5xl font-display">
           {question.value}
         </span>
       )}

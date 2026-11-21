@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, Skull, Flame, Star, Minus } from 'lucide-react';
+import { Trophy, Flame, Star, Minus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useEffect } from 'react';
 
 interface CompetitiveResultsModalProps {
   isOpen: boolean;
@@ -27,6 +28,29 @@ const CompetitiveResultsModal = ({
   result,
   onClose,
 }: CompetitiveResultsModalProps) => {
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (result) {
+        if (e.key === 'Enter' || e.key === 'Escape' || e.code === 'Space') {
+          e.preventDefault();
+          onClose();
+        }
+        return;
+      }
+      const map: Record<string, 'team1' | 'team2' | 'both' | 'none'> = {
+        '1': 'team1',
+        '2': 'team2',
+        b: 'both',
+        n: 'none',
+      };
+      const winner = map[e.key.toLowerCase()];
+      if (winner) onSelectWinner(winner);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isOpen, result, onSelectWinner, onClose]);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -49,7 +73,7 @@ const CompetitiveResultsModal = ({
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.5, opacity: 0 }}
             transition={{ type: 'spring', damping: 20 }}
-            className="relative w-full max-w-4xl bg-gradient-to-br from-card via-card to-muted rounded-3xl p-8 md:p-12 border-4 border-accent overflow-hidden"
+            className="relative w-full max-w-4xl max-h-[95vh] overflow-y-auto bg-gradient-to-br from-card via-card to-muted rounded-3xl p-5 sm:p-8 md:p-12 border-4 border-accent overflow-hidden"
           >
             {/* Decorative elements */}
             <div className="absolute top-0 left-0 w-32 h-32 bg-primary/20 rounded-full blur-3xl" />
@@ -63,7 +87,7 @@ const CompetitiveResultsModal = ({
                   animate={{ y: 0, opacity: 1 }}
                   className="text-center mb-10"
                 >
-                  <h2 className="text-4xl md:text-5xl font-display text-foreground text-glow-gold mb-4">
+                  <h2 className="text-3xl md:text-5xl font-display text-foreground text-glow-gold mb-4">
                     WHO ANSWERED CORRECTLY?
                   </h2>
                   <div className="flex items-center justify-center gap-2">
@@ -76,12 +100,12 @@ const CompetitiveResultsModal = ({
                 </motion.div>
 
                 {/* Selection buttons */}
-                <div className="grid grid-cols-2 gap-6 mb-8">
+                <div className="grid grid-cols-2 gap-3 sm:gap-6 mb-3 sm:mb-6">
                   <motion.button
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => onSelectWinner('team1')}
-                    className="p-8 rounded-2xl bg-primary/20 border-4 border-primary hover:bg-primary/30 transition-colors group"
+                    className="p-4 sm:p-8 rounded-2xl bg-primary/20 border-4 border-primary hover:bg-primary/30 transition-colors group"
                   >
                     <Trophy className="w-12 h-12 mx-auto mb-4 text-primary group-hover:animate-bounce" />
                     <p className="text-2xl font-display text-primary">{team1Name}</p>
@@ -93,7 +117,7 @@ const CompetitiveResultsModal = ({
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => onSelectWinner('team2')}
-                    className="p-8 rounded-2xl bg-secondary/20 border-4 border-secondary hover:bg-secondary/30 transition-colors group"
+                    className="p-4 sm:p-8 rounded-2xl bg-secondary/20 border-4 border-secondary hover:bg-secondary/30 transition-colors group"
                   >
                     <Trophy className="w-12 h-12 mx-auto mb-4 text-secondary group-hover:animate-bounce" />
                     <p className="text-2xl font-display text-secondary">{team2Name}</p>
@@ -102,7 +126,7 @@ const CompetitiveResultsModal = ({
                   </motion.button>
                 </div>
 
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-2 gap-3 sm:gap-6">
                   <motion.button
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.98 }}
@@ -131,6 +155,9 @@ const CompetitiveResultsModal = ({
                     <p className="text-sm text-muted-foreground">No points awarded</p>
                   </motion.button>
                 </div>
+                <p className="mt-6 text-center text-xs text-muted-foreground hidden md:block">
+                  Keys: 1 = {team1Name} · 2 = {team2Name} · B = both · N = neither
+                </p>
               </div>
             ) : (
               // Results Phase
@@ -141,7 +168,7 @@ const CompetitiveResultsModal = ({
                   transition={{ type: 'spring', damping: 15 }}
                   className="text-center mb-8"
                 >
-                  <h2 className="text-4xl md:text-5xl font-display text-foreground text-glow-gold mb-2">
+                  <h2 className="text-3xl md:text-5xl font-display text-foreground text-glow-gold mb-2">
                     {result.winner === 'both'
                       ? '🎉 BOTH TEAMS WIN! 🎉'
                       : result.winner === 'none'
@@ -151,7 +178,7 @@ const CompetitiveResultsModal = ({
                 </motion.div>
 
                 {/* Score changes */}
-                <div className="grid grid-cols-2 gap-8 mb-10">
+                <div className="grid grid-cols-2 gap-3 sm:gap-8 mb-8 sm:mb-10">
                   {/* Team 1 result */}
                   <motion.div
                     initial={{ x: -100, opacity: 0 }}

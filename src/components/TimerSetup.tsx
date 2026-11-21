@@ -3,6 +3,7 @@ import { Clock, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Question } from '@/data/gameData';
+import { useEffect } from 'react';
 
 interface TimerSetupProps {
   isOpen: boolean;
@@ -25,6 +26,19 @@ const TimerSetup = ({
   onStart,
   onCancel,
 }: TimerSetupProps) => {
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onCancel();
+      else if (e.key === 'Enter' && !(e.target instanceof HTMLInputElement)) {
+        e.preventDefault();
+        onStart();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isOpen, onStart, onCancel]);
+
   if (!isOpen || !question) return null;
 
   return (
@@ -107,6 +121,7 @@ const TimerSetup = ({
             START
           </Button>
         </div>
+        <p className="mt-4 text-center text-xs text-muted-foreground">Enter to start · Esc to go back</p>
       </motion.div>
     </motion.div>
   );
