@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { Check } from 'lucide-react';
 import { Question } from '@/data/gameData';
 
 interface GameTileProps {
@@ -10,37 +11,25 @@ interface GameTileProps {
 }
 
 const GameTile = ({ question, categoryIndex, rowIndex, onSelect, onHover }: GameTileProps) => {
-  const handleClick = () => {
-    if (!question.answered) {
-      onSelect(question);
-    }
-  };
+  const played = question.answered;
 
   return (
     <motion.button
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ 
-        delay: categoryIndex * 0.1 + rowIndex * 0.05 + 0.3,
-        duration: 0.3,
-        type: 'spring',
-        stiffness: 200,
-      }}
-      whileHover={!question.answered ? { scale: 1.05 } : {}}
-      whileTap={!question.answered ? { scale: 0.98 } : {}}
-      onClick={handleClick}
-      onMouseEnter={!question.answered ? onHover : undefined}
-      className={`
-        game-tile w-full aspect-[4/3] rounded-lg flex items-center justify-center
-        ${question.answered ? 'answered' : 'pulse-glow'}
-      `}
-      disabled={question.answered}
-      aria-label={question.answered ? `${question.value} points, already played` : `${question.value} points`}
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.15 + rowIndex * 0.06 + categoryIndex * 0.03, duration: 0.3, ease: 'easeOut' }}
+      whileHover={!played ? { y: -3 } : undefined}
+      whileTap={!played ? { scale: 0.97 } : undefined}
+      onClick={() => !played && onSelect(question)}
+      onMouseEnter={!played ? onHover : undefined}
+      className={`tile aspect-[4/3] ${played ? 'tile-played' : 'tile-open'}`}
+      disabled={played}
+      aria-label={played ? `${question.value} points, already played` : `${question.value} points`}
     >
-      {!question.answered && (
-        <span className="point-value text-lg sm:text-3xl md:text-4xl lg:text-5xl font-display">
-          {question.value}
-        </span>
+      {played ? (
+        <Check className="w-4 h-4 sm:w-6 sm:h-6 text-muted-foreground/40" aria-hidden />
+      ) : (
+        <span className="tile-value text-lg sm:text-3xl md:text-4xl lg:text-5xl">{question.value}</span>
       )}
     </motion.button>
   );

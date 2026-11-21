@@ -224,35 +224,90 @@ const JeopardyGame = () => {
     if (!isComplete) celebrated.current = false;
   }, [isComplete, gamePhase]);
 
+  const winnerColor =
+    game.team1Score > game.team2Score ? 'var(--team1)' : game.team2Score > game.team1Score ? 'var(--team2)' : null;
   const winnerName =
     game.team1Score > game.team2Score ? game.team1Name : game.team2Score > game.team1Score ? game.team2Name : null;
 
   return (
-    <div className="min-h-screen bg-background p-3 sm:p-4 md:p-6 lg:p-8 overflow-x-hidden">
-      <div
-        className="fixed inset-0 pointer-events-none"
-        style={{
-          background:
-            'radial-gradient(ellipse at 50% 0%, hsl(220 80% 15%) 0%, hsl(220 80% 8%) 50%, hsl(220 80% 4%) 100%)',
-        }}
-      />
-
-      <div className="relative z-10 max-w-7xl mx-auto">
+    <div className="stage-bg min-h-screen px-3 py-4 sm:px-5 sm:py-6 md:px-8 lg:px-10 overflow-x-hidden">
+      <div className="relative max-w-7xl mx-auto">
         <motion.header
-          initial={{ opacity: 0, y: -30 }}
+          initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-4"
+          transition={{ duration: 0.4 }}
+          className="mb-5 sm:mb-7 flex items-center justify-between gap-3"
         >
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-display text-foreground text-glow-gold tracking-wider">
-            QUIZ SHOWDOWN
-          </h1>
-          <motion.div
-            initial={{ scaleX: 0 }}
-            animate={{ scaleX: 1 }}
-            transition={{ delay: 0.3, duration: 0.5 }}
-            className="h-1 w-48 mx-auto mt-2 bg-gradient-to-r from-transparent via-secondary to-transparent"
-          />
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="grid h-9 w-9 sm:h-11 sm:w-11 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground font-display text-xl sm:text-2xl font-extrabold">
+              Q
+            </div>
+            <div className="min-w-0">
+              <h1 className="font-display text-lg sm:text-2xl md:text-3xl font-extrabold leading-none truncate">
+                Quiz Showdown
+              </h1>
+              <div className="mt-1.5 flex items-center gap-2">
+                <div className="h-1 w-16 sm:w-28 rounded-full bg-muted overflow-hidden">
+                  <motion.div
+                    className="h-full bg-primary"
+                    initial={false}
+                    animate={{ width: `${(questionsAnswered / Math.max(1, totalQuestions)) * 100}%` }}
+                  />
+                </div>
+                <p className="text-[11px] sm:text-xs text-muted-foreground tabular-nums whitespace-nowrap">
+                  {questionsAnswered} of {totalQuestions} played
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex shrink-0 gap-1.5 sm:gap-2">
+            <Button
+              onClick={() => setMuted(!muted)}
+              variant="ghost"
+              size="icon"
+              aria-label={muted ? 'Unmute sounds' : 'Mute sounds'}
+              title={muted ? 'Unmute sounds' : 'Mute sounds'}
+              className="h-9 w-9 rounded-xl border bg-card/60 text-muted-foreground hover:text-foreground"
+            >
+              {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+            </Button>
+            <Button
+              onClick={handleUndo}
+              disabled={game.history.length === 0}
+              variant="ghost"
+              size="sm"
+              title="Undo the last scored question"
+              className="h-9 rounded-xl border bg-card/60 text-muted-foreground hover:text-foreground"
+            >
+              <Undo2 className="w-4 h-4 sm:mr-1.5" />
+              <span className="hidden sm:inline">Undo</span>
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-9 rounded-xl border bg-card/60 text-muted-foreground hover:text-foreground"
+                >
+                  <RotateCcw className="w-4 h-4 sm:mr-1.5" />
+                  <span className="hidden sm:inline">New game</span>
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="rounded-2xl">
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="font-display text-2xl">Start a new game?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Both scores go back to 0 and every question returns to the board. Team names are kept.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Keep playing</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleReset}>New game</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </motion.header>
 
         <Scoreboard
@@ -267,69 +322,6 @@ const JeopardyGame = () => {
           isAnimating={isScoreAnimating}
           lastScoreChange={lastScoreChange}
         />
-
-        {/* Progress & controls */}
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-          <div className="flex items-center gap-3 min-w-[180px] flex-1">
-            <div className="h-2 flex-1 max-w-xs rounded-full bg-muted overflow-hidden">
-              <motion.div
-                className="h-full bg-secondary"
-                initial={false}
-                animate={{ width: `${(questionsAnswered / Math.max(1, totalQuestions)) * 100}%` }}
-              />
-            </div>
-            <p className="text-muted-foreground text-sm whitespace-nowrap">
-              {questionsAnswered} / {totalQuestions} answered
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              onClick={() => setMuted(!muted)}
-              variant="outline"
-              size="sm"
-              aria-label={muted ? 'Unmute sounds' : 'Mute sounds'}
-              title={muted ? 'Unmute sounds' : 'Mute sounds'}
-              className="border-muted-foreground/30 text-muted-foreground hover:border-secondary hover:text-secondary"
-            >
-              {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-            </Button>
-            <Button
-              onClick={handleUndo}
-              disabled={game.history.length === 0}
-              variant="outline"
-              size="sm"
-              title="Undo the last scored question"
-              className="border-muted-foreground/30 text-muted-foreground hover:border-secondary hover:text-secondary"
-            >
-              <Undo2 className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">Undo</span>
-            </Button>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-muted-foreground/30 text-muted-foreground hover:border-secondary hover:text-secondary"
-                >
-                  <RotateCcw className="w-4 h-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Reset Game</span>
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle className="font-display text-2xl">Start a new game?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Both scores go back to 0 and every question returns to the board. Team names are kept.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Keep playing</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleReset}>Reset</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
-        </div>
 
         <JeopardyBoard categories={categories} onSelectQuestion={handleSelectQuestion} onHover={playHover} />
 
@@ -368,45 +360,72 @@ const JeopardyGame = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-40 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+              className="fixed inset-0 z-40 flex items-center justify-center p-4 bg-background/85 backdrop-blur-md"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Game complete"
             >
               <motion.div
-                initial={{ scale: 0.7, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ type: 'spring', damping: 16 }}
-                className="w-full max-w-2xl text-center bg-card border-4 border-secondary rounded-3xl p-6 sm:p-10"
+                initial={{ y: 24, opacity: 0, scale: 0.96 }}
+                animate={{ y: 0, opacity: 1, scale: 1 }}
+                transition={{ type: 'spring', damping: 20 }}
+                className="panel w-full max-w-2xl overflow-hidden text-center"
               >
-                <Trophy className="w-16 h-16 sm:w-20 sm:h-20 mx-auto text-secondary mb-4 animate-bounce" />
-                <h2 className="text-4xl sm:text-5xl font-display text-secondary text-glow-gold">GAME COMPLETE!</h2>
-                <p className="text-2xl sm:text-3xl font-display text-foreground mt-4">
-                  {winnerName ? `${winnerName} wins!` : "It's a tie!"}
-                </p>
-                <div className="grid grid-cols-2 gap-4 mt-6">
+                <div
+                  className="px-6 pt-8 pb-6 sm:px-10 sm:pt-10"
+                  style={{
+                    background: winnerColor
+                      ? `radial-gradient(ellipse 80% 100% at 50% 0%, hsl(${winnerColor} / 0.28), transparent 70%)`
+                      : undefined,
+                  }}
+                >
+                  <div
+                    className="mx-auto mb-4 grid h-14 w-14 sm:h-16 sm:w-16 place-items-center rounded-2xl"
+                    style={{ background: winnerColor ? `hsl(${winnerColor})` : 'hsl(var(--primary))' }}
+                  >
+                    <Trophy className="h-7 w-7 sm:h-8 sm:w-8 text-primary-foreground" />
+                  </div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Game complete</p>
+                  <h2 className="mt-2 font-display text-4xl sm:text-6xl font-extrabold leading-none">
+                    {winnerName ? (
+                      <>
+                        <span style={{ color: `hsl(${winnerColor})` }}>{winnerName}</span> wins
+                      </>
+                    ) : (
+                      "It's a tie"
+                    )}
+                  </h2>
+                </div>
+                <div className="grid grid-cols-2 gap-3 px-6 sm:px-10">
                   {[
-                    { name: game.team1Name, score: game.team1Score, win: game.team1Score > game.team2Score },
-                    { name: game.team2Name, score: game.team2Score, win: game.team2Score > game.team1Score },
+                    { name: game.team1Name, score: game.team1Score, color: 'var(--team1)', win: game.team1Score > game.team2Score },
+                    { name: game.team2Name, score: game.team2Score, color: 'var(--team2)', win: game.team2Score > game.team1Score },
                   ].map((t, i) => (
                     <div
                       key={i}
-                      className={`rounded-2xl border-4 p-4 ${t.win ? 'border-secondary bg-secondary/10' : 'border-muted bg-muted/30'}`}
+                      className="rounded-xl border bg-background/50 p-4"
+                      style={{ borderColor: t.win ? `hsl(${t.color} / 0.7)` : undefined }}
                     >
-                      <p className="font-display text-xl text-foreground truncate">{t.name}</p>
-                      <p className={`font-display text-4xl sm:text-5xl ${t.win ? 'text-secondary' : 'text-foreground'}`}>
+                      <p className="flex items-center justify-center gap-2 text-sm font-semibold text-muted-foreground truncate">
+                        <span className="h-2 w-2 rounded-full" style={{ background: `hsl(${t.color})` }} />
+                        {t.name}
+                      </p>
+                      <p
+                        className="mt-1 font-display text-4xl sm:text-5xl font-extrabold tabular-nums"
+                        style={{ color: t.win ? `hsl(${t.color})` : undefined }}
+                      >
                         {t.score}
                       </p>
                     </div>
                   ))}
                 </div>
-                <div className="flex flex-wrap justify-center gap-3 mt-8">
-                  <Button variant="outline" onClick={() => setShowFinal(false)}>
+                <div className="flex flex-wrap justify-center gap-3 px-6 py-7 sm:px-10">
+                  <Button variant="outline" className="rounded-xl" onClick={() => setShowFinal(false)}>
                     View board
                   </Button>
-                  <Button
-                    onClick={handleReset}
-                    className="bg-secondary hover:bg-secondary/80 text-secondary-foreground font-display text-lg px-8"
-                  >
+                  <Button onClick={handleReset} className="rounded-xl px-6 font-semibold">
                     <RotateCcw className="w-4 h-4 mr-2" />
-                    PLAY AGAIN
+                    Play again
                   </Button>
                 </div>
               </motion.div>

@@ -1,103 +1,61 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Jeopardy Game Show Design System */
+/* Quiz Showdown: "studio live" design system
+   Ink stage, electric-lime brand, coral (Team 1) vs sky (Team 2). */
 
 @layer base {
   :root {
-    /* Core Jeopardy Colors */
-    --background: 220 80% 8%;
-    --foreground: 45 100% 96%;
+    --background: 240 33% 5%;
+    --foreground: 40 30% 96%;
 
-    --card: 220 75% 12%;
-    --card-foreground: 45 100% 96%;
+    --card: 240 22% 9%;
+    --card-foreground: 40 30% 96%;
 
-    --popover: 220 70% 15%;
-    --popover-foreground: 45 100% 96%;
+    --popover: 240 22% 10%;
+    --popover-foreground: 40 30% 96%;
 
-    /* Classic Jeopardy Blue */
-    --primary: 220 85% 45%;
-    --primary-foreground: 45 100% 96%;
+    /* Brand: electric lime */
+    --primary: 72 100% 58%;
+    --primary-foreground: 240 33% 6%;
 
-    /* Gold Accent */
-    --secondary: 45 100% 50%;
-    --secondary-foreground: 220 80% 8%;
+    /* Raised surface */
+    --secondary: 240 18% 15%;
+    --secondary-foreground: 40 30% 96%;
 
-    --muted: 220 50% 20%;
-    --muted-foreground: 220 20% 60%;
+    --muted: 240 16% 13%;
+    --muted-foreground: 240 10% 64%;
 
-    /* Electric Blue Accent */
-    --accent: 200 100% 60%;
-    --accent-foreground: 220 80% 8%;
+    --accent: 240 18% 18%;
+    --accent-foreground: 40 30% 96%;
 
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 45 100% 96%;
+    --destructive: 0 84% 62%;
+    --destructive-foreground: 40 30% 96%;
 
-    /* Success Green */
-    --success: 142 76% 45%;
-    --success-foreground: 45 100% 96%;
+    --success: 150 70% 48%;
+    --success-foreground: 240 33% 6%;
 
-    --border: 220 50% 25%;
-    --input: 220 50% 20%;
-    --ring: 200 100% 60%;
+    /* Teams */
+    --team1: 12 92% 63%;
+    --team2: 204 94% 63%;
 
-    --radius: 0.5rem;
+    --border: 240 15% 18%;
+    --input: 240 15% 20%;
+    --ring: 72 100% 58%;
 
-    /* Game Show Glows */
-    --glow-gold: 0 0 20px hsl(45 100% 50% / 0.6), 0 0 40px hsl(45 100% 50% / 0.4), 0 0 60px hsl(45 100% 50% / 0.2);
-    --glow-blue: 0 0 20px hsl(200 100% 60% / 0.6), 0 0 40px hsl(200 100% 60% / 0.4), 0 0 60px hsl(200 100% 60% / 0.2);
-    --glow-primary: 0 0 15px hsl(220 85% 45% / 0.5), 0 0 30px hsl(220 85% 45% / 0.3);
-    
-    /* Tile Gradient */
-    --tile-gradient: linear-gradient(180deg, hsl(220 85% 50%) 0%, hsl(220 85% 35%) 100%);
-    --tile-gradient-hover: linear-gradient(180deg, hsl(220 85% 55%) 0%, hsl(220 85% 40%) 100%);
+    --radius: 0.75rem;
 
-    /* Stage Lighting */
-    --stage-gradient: radial-gradient(ellipse at 50% 0%, hsl(220 80% 20%) 0%, hsl(220 80% 8%) 70%);
+    --sidebar-background: 240 22% 9%;
+    --sidebar-foreground: 40 30% 96%;
+    --sidebar-primary: 72 100% 58%;
+    --sidebar-primary-foreground: 240 33% 6%;
+    --sidebar-accent: 240 18% 15%;
+    --sidebar-accent-foreground: 40 30% 96%;
+    --sidebar-border: 240 15% 18%;
+    --sidebar-ring: 72 100% 58%;
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 220 80% 8%;
-    --foreground: 45 100% 96%;
-    --card: 220 75% 12%;
-    --card-foreground: 45 100% 96%;
-    --popover: 220 70% 15%;
-    --popover-foreground: 45 100% 96%;
-    --primary: 220 85% 45%;
-    --primary-foreground: 45 100% 96%;
-    --secondary: 45 100% 50%;
-    --secondary-foreground: 220 80% 8%;
-    --muted: 220 50% 20%;
-    --muted-foreground: 220 20% 60%;
-    --accent: 200 100% 60%;
-    --accent-foreground: 220 80% 8%;
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 45 100% 96%;
-    --success: 142 76% 45%;
-    --success-foreground: 45 100% 96%;
-    --border: 220 50% 25%;
-    --input: 220 50% 20%;
-    --ring: 200 100% 60%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    color-scheme: dark;
   }
 }
 
@@ -106,175 +64,80 @@
     @apply border-border;
   }
 
+  html {
+    background: hsl(var(--background));
+  }
+
   body {
-    @apply bg-background text-foreground font-sans;
-    font-family: 'Inter', sans-serif;
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "ss01", "cv11";
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Bebas Neue', sans-serif;
-    letter-spacing: 0.05em;
+    @apply font-display;
+    letter-spacing: -0.02em;
+  }
+
+  ::selection {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
   }
 }
 
 @layer components {
-  /* Game Tile Styles */
-  .game-tile {
-    @apply relative overflow-hidden cursor-pointer transition-all duration-300;
-    background: var(--tile-gradient);
-    box-shadow: 
-      inset 0 1px 0 hsl(220 85% 60% / 0.3),
-      inset 0 -2px 0 hsl(220 85% 25% / 0.5),
-      0 4px 8px hsl(220 80% 5% / 0.5);
-    border: 2px solid hsl(220 85% 35%);
+  /* The stage: dot grid plus two team-coloured lights */
+  .stage-bg {
+    background-color: hsl(var(--background));
+    background-image:
+      radial-gradient(ellipse 60% 45% at 0% 0%, hsl(var(--team1) / 0.16), transparent 70%),
+      radial-gradient(ellipse 60% 45% at 100% 0%, hsl(var(--team2) / 0.16), transparent 70%),
+      radial-gradient(hsl(240 20% 60% / 0.09) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 22px 22px;
   }
 
-  .game-tile:hover:not(.answered) {
-    background: var(--tile-gradient-hover);
-    box-shadow: 
-      var(--glow-gold),
-      inset 0 1px 0 hsl(220 85% 60% / 0.3),
-      inset 0 -2px 0 hsl(220 85% 25% / 0.5),
-      0 4px 8px hsl(220 80% 5% / 0.5);
-    transform: scale(1.02);
-    border-color: hsl(45 100% 50%);
+  .panel {
+    @apply rounded-2xl border bg-card/80 backdrop-blur-sm;
+    box-shadow: 0 1px 0 hsl(0 0% 100% / 0.04) inset, 0 20px 40px -20px hsl(240 50% 2% / 0.8);
   }
 
-  .game-tile.answered {
-    @apply opacity-30 cursor-default;
-    background: hsl(220 50% 15%);
-    border-color: hsl(220 50% 20%);
+  /* Board tiles */
+  .tile {
+    @apply relative w-full rounded-xl border flex items-center justify-center overflow-hidden;
+    background: linear-gradient(180deg, hsl(240 20% 13%), hsl(240 22% 9%));
+    border-color: hsl(240 15% 20%);
+    box-shadow: 0 1px 0 hsl(0 0% 100% / 0.05) inset, 0 8px 18px -10px hsl(240 50% 2% / 0.9);
+    transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, color 0.18s ease;
   }
 
-  /* Category Header */
-  .category-header {
-    @apply px-2 py-4 text-center font-bold uppercase tracking-wider;
-    background: linear-gradient(180deg, hsl(220 75% 20%) 0%, hsl(220 75% 12%) 100%);
-    border: 2px solid hsl(220 50% 25%);
-    text-shadow: 0 2px 4px hsl(220 80% 5% / 0.8);
-    box-shadow: 
-      inset 0 1px 0 hsl(220 50% 30% / 0.3),
-      0 4px 8px hsl(220 80% 5% / 0.3);
+  .tile-open {
+    @apply cursor-pointer text-foreground;
   }
 
-  /* Point Value Text */
-  .point-value {
-    font-family: 'Bebas Neue', sans-serif;
-    @apply text-secondary;
-    text-shadow: 
-      0 0 10px hsl(45 100% 50% / 0.8),
-      0 2px 4px hsl(220 80% 5% / 0.8);
+  .tile-open:hover,
+  .tile-open:focus-visible {
+    background: hsl(var(--primary));
+    border-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    box-shadow: 0 0 0 4px hsl(var(--primary) / 0.18), 0 18px 36px -12px hsl(var(--primary) / 0.55);
+    outline: none;
   }
 
-  /* Scoreboard */
-  .scoreboard {
-    background: linear-gradient(135deg, hsl(220 70% 15%) 0%, hsl(220 80% 8%) 100%);
-    border: 2px solid hsl(45 100% 50% / 0.3);
-    box-shadow: var(--glow-gold);
+  .tile-played {
+    @apply cursor-default;
+    background: transparent;
+    border-style: dashed;
+    border-color: hsl(240 15% 17%);
+    box-shadow: none;
   }
 
-  /* Question Modal */
-  .question-modal {
-    background: var(--stage-gradient);
-  }
-
-  /* Answer Buttons */
-  .answer-btn-correct {
-    @apply bg-success text-success-foreground;
-    box-shadow: 0 0 20px hsl(142 76% 45% / 0.5);
-  }
-
-  .answer-btn-wrong {
-    @apply bg-destructive text-destructive-foreground;
-    box-shadow: 0 0 20px hsl(0 72% 51% / 0.5);
-  }
-
-  /* Host Text */
-  .host-text {
-    @apply text-accent;
-    text-shadow: 0 0 10px hsl(200 100% 60% / 0.5);
-  }
-
-  /* Pulsing Animation */
-  .pulse-glow {
-    animation: pulseGlow 2s ease-in-out infinite;
-  }
-
-  @keyframes pulseGlow {
-    0%, 100% {
-      box-shadow: 
-        inset 0 1px 0 hsl(220 85% 60% / 0.3),
-        inset 0 -2px 0 hsl(220 85% 25% / 0.5),
-        0 4px 8px hsl(220 80% 5% / 0.5);
-    }
-    50% {
-      box-shadow: 
-        0 0 15px hsl(200 100% 60% / 0.3),
-        inset 0 1px 0 hsl(220 85% 60% / 0.3),
-        inset 0 -2px 0 hsl(220 85% 25% / 0.5),
-        0 4px 8px hsl(220 80% 5% / 0.5);
-    }
-  }
-
-  /* Score Counter Animation */
-  .score-animate {
-    animation: scorePopUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
-
-  @keyframes scorePopUp {
-    0% {
-      transform: scale(1);
-    }
-    50% {
-      transform: scale(1.2);
-      color: hsl(45 100% 50%);
-    }
-    100% {
-      transform: scale(1);
-    }
-  }
-
-  /* Stage Spotlight */
-  .spotlight {
-    position: relative;
-  }
-
-  .spotlight::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 200%;
-    height: 100%;
-    background: radial-gradient(ellipse at center, hsl(45 100% 50% / 0.1) 0%, transparent 60%);
-    pointer-events: none;
+  .tile-value {
+    @apply font-display font-extrabold tabular-nums leading-none;
+    letter-spacing: -0.04em;
   }
 }
 
 @layer utilities {
-  .text-glow-gold {
-    text-shadow: 
-      0 0 10px hsl(45 100% 50% / 0.8),
-      0 0 20px hsl(45 100% 50% / 0.5),
-      0 0 30px hsl(45 100% 50% / 0.3);
-  }
-
-  .text-glow-blue {
-    text-shadow: 
-      0 0 10px hsl(200 100% 60% / 0.8),
-      0 0 20px hsl(200 100% 60% / 0.5);
-  }
-
-  .preserve-3d {
-    transform-style: preserve-3d;
-  }
-
-  .backface-hidden {
-    backface-visibility: hidden;
-  }
-
-  .rotate-y-180 {
-    transform: rotateY(180deg);
-  }
+  .text-team1 { color: hsl(var(--team1)); }
+  .text-team2 { color: hsl(var(--team2)); }
+  .glow-brand { text-shadow: 0 0 28px hsl(var(--primary) / 0.45); }
 }

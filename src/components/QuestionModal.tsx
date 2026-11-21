@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, Pause, Play, Zap, Plus } from 'lucide-react';
+import { Pause, Play, Plus, Eye, ArrowRight } from 'lucide-react';
 import { Question } from '@/data/gameData';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState, useCallback, useRef } from 'react';
@@ -113,9 +113,18 @@ const QuestionModal = ({
 
   if (!question) return null;
 
-  const progressPercent = totalTime > 0 ? (timeLeft / totalTime) * 100 : 0;
+  const fraction = totalTime > 0 ? timeLeft / totalTime : 0;
   const isLowTime = timeLeft <= 10;
   const isCriticalTime = timeLeft <= 5 && !paused && !showAnswer;
+  const ringColor = paused
+    ? 'hsl(var(--muted-foreground))'
+    : isCriticalTime
+    ? 'hsl(var(--destructive))'
+    : isLowTime
+    ? 'hsl(28 95% 60%)'
+    : 'hsl(var(--primary))';
+  const R = 44;
+  const C = 2 * Math.PI * R;
 
   return (
     <AnimatePresence>
@@ -124,108 +133,107 @@ const QuestionModal = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto"
+          className="stage-bg fixed inset-0 z-50 flex items-center justify-center overflow-y-auto"
           role="dialog"
           aria-modal="true"
           aria-label={`${categoryName} for ${question.value} points`}
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/90 via-background to-secondary/90" />
-
-          {/* Timer bar */}
-          <div className="absolute top-0 left-0 right-0 h-3 bg-muted/30">
+          {/* thin timer bar */}
+          <div className="absolute inset-x-0 top-0 h-1 bg-muted">
             <motion.div
-              animate={{ width: `${progressPercent}%` }}
-              transition={{ duration: 0.3 }}
-              className={`h-full transition-colors ${
-                paused ? 'bg-muted-foreground' : isLowTime ? 'bg-red-500 animate-pulse' : 'bg-accent'
-              }`}
+              animate={{ width: `${fraction * 100}%` }}
+              transition={{ duration: 0.35 }}
+              className="h-full"
+              style={{ background: ringColor }}
             />
           </div>
 
-          <div className="relative z-10 w-full max-w-5xl mx-auto px-4 md:px-8 py-12 text-center">
+          <div className="relative w-full max-w-5xl mx-auto px-5 md:px-10 py-14 text-center">
             {/* Category & points */}
             <motion.div
-              initial={{ y: -50, opacity: 0 }}
+              initial={{ y: -16, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className="mb-6 md:mb-8"
+              transition={{ delay: 0.1 }}
+              className="flex flex-wrap items-center justify-center gap-2"
             >
-              <span className="inline-block px-6 py-2 bg-card/80 rounded-full text-lg font-medium text-accent border border-accent/50">
+              <span className="rounded-full border bg-card/70 px-4 py-1.5 text-xs sm:text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 {categoryName}
               </span>
-              <div className="mt-4 flex items-center justify-center gap-3">
-                <Zap className="w-7 h-7 md:w-8 md:h-8 text-secondary" />
-                <span className="text-3xl md:text-4xl font-display text-secondary text-glow-gold">
-                  {question.value} POINTS
-                </span>
-                <Zap className="w-7 h-7 md:w-8 md:h-8 text-secondary" />
-              </div>
+              <span className="rounded-full bg-primary px-4 py-1.5 text-xs sm:text-sm font-bold tabular-nums text-primary-foreground">
+                {question.value} pts
+              </span>
             </motion.div>
 
-            {/* Timer */}
-            {!showAnswer && (
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: isCriticalTime ? [1, 1.1, 1] : 1 }}
-                transition={{
-                  delay: 0.3,
-                  type: 'spring',
-                  scale: isCriticalTime ? { duration: 0.5, repeat: Infinity } : undefined,
-                }}
-                className={`mb-8 md:mb-10 inline-flex items-center gap-3 px-8 py-4 rounded-2xl border-4 transition-all duration-300 ${
-                  paused
-                    ? 'bg-card/80 border-muted-foreground'
-                    : isCriticalTime
-                    ? 'bg-red-600/40 border-red-500 shadow-[0_0_30px_rgba(239,68,68,0.6)]'
-                    : isLowTime
-                    ? 'bg-red-500/20 border-red-500'
-                    : 'bg-card/80 border-accent'
-                }`}
-              >
-                {paused ? (
-                  <Pause className="w-10 h-10 text-muted-foreground" />
-                ) : (
-                  <Clock className={`w-10 h-10 ${isCriticalTime ? 'text-red-300' : isLowTime ? 'text-red-400' : 'text-accent'}`} />
-                )}
-                <motion.span
-                  key={timeLeft}
-                  initial={{ scale: 1.3, opacity: 0.7 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  className={`text-6xl font-display tabular-nums ${
-                    paused ? 'text-muted-foreground' : isCriticalTime ? 'text-red-300' : isLowTime ? 'text-red-400' : 'text-foreground'
-                  }`}
-                  aria-live="off"
+            {/* Countdown ring */}
+            <AnimatePresence>
+              {!showAnswer && (
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: isCriticalTime ? [1, 1.06, 1] : 1, opacity: 1 }}
+                  exit={{ scale: 0.8, opacity: 0, height: 0, marginTop: 0 }}
+                  transition={{ scale: isCriticalTime ? { duration: 0.6, repeat: Infinity } : { duration: 0.3 } }}
+                  className="relative mx-auto mt-8 h-28 w-28 sm:h-36 sm:w-36"
                 >
-                  {timeLeft}
-                </motion.span>
-              </motion.div>
-            )}
+                  <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
+                    <circle cx="50" cy="50" r={R} fill="none" stroke="hsl(var(--muted))" strokeWidth="6" />
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r={R}
+                      fill="none"
+                      stroke={ringColor}
+                      strokeWidth="6"
+                      strokeLinecap="round"
+                      strokeDasharray={C}
+                      strokeDashoffset={C * (1 - fraction)}
+                      style={{ transition: 'stroke-dashoffset 0.4s linear, stroke 0.3s ease' }}
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <motion.span
+                      key={timeLeft}
+                      initial={{ y: -6, opacity: 0.4 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      className="font-display text-4xl sm:text-5xl font-extrabold tabular-nums leading-none"
+                      style={{ color: paused ? 'hsl(var(--muted-foreground))' : isLowTime ? ringColor : undefined }}
+                    >
+                      {timeLeft}
+                    </motion.span>
+                    <span className="mt-1 text-[10px] sm:text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                      {paused ? 'Paused' : 'sec'}
+                    </span>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Question */}
-            <motion.div
-              initial={{ y: 50, opacity: 0 }}
+            <motion.h2
+              initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.4, type: 'spring' }}
-              className="mb-8 md:mb-10"
+              transition={{ delay: 0.2, type: 'spring', damping: 20 }}
+              className="mx-auto mt-8 sm:mt-10 max-w-4xl font-display text-2xl sm:text-4xl md:text-5xl font-bold leading-[1.15] text-balance"
             >
-              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-display text-foreground leading-relaxed text-glow-gold">
-                {question.question}
-              </h2>
-            </motion.div>
+              {question.question}
+            </motion.h2>
 
             {/* Answer */}
             <AnimatePresence>
               {showAnswer && (
                 <motion.div
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0, opacity: 0 }}
-                  className="mb-8 p-6 md:p-8 bg-card/90 rounded-2xl border-4 border-secondary"
+                  initial={{ y: 20, opacity: 0, scale: 0.97 }}
+                  animate={{ y: 0, opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ type: 'spring', damping: 18 }}
+                  className="mx-auto mt-8 sm:mt-10 max-w-2xl rounded-2xl border-2 border-primary bg-primary/10 px-6 py-6 sm:py-8"
+                  style={{ boxShadow: '0 0 60px -12px hsl(var(--primary) / 0.5)' }}
                 >
-                  <p className="text-muted-foreground text-lg mb-2">
-                    {timeLeft === 0 ? "TIME'S UP! THE ANSWER IS:" : 'THE ANSWER IS:'}
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+                    {timeLeft === 0 ? "Time's up · the answer is" : 'The answer is'}
                   </p>
-                  <p className="text-3xl md:text-4xl font-display text-secondary text-glow-gold">{question.answer}</p>
+                  <p className="mt-2 font-display text-3xl sm:text-5xl font-extrabold text-foreground glow-brand">
+                    {question.answer}
+                  </p>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -234,36 +242,40 @@ const QuestionModal = ({
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.6 }}
-              className="flex flex-wrap items-center justify-center gap-3"
+              transition={{ delay: 0.35 }}
+              className="mt-10 flex flex-wrap items-center justify-center gap-2.5"
             >
               {!showAnswer && (
                 <>
                   <Button
                     onClick={() => setPaused((p) => !p)}
-                    size="lg"
                     variant="outline"
-                    className="font-display text-lg px-6 py-6 bg-card/60"
+                    size="lg"
+                    className="h-12 rounded-xl bg-card/60 px-5 font-semibold"
                   >
-                    {paused ? <Play className="w-5 h-5 mr-2" /> : <Pause className="w-5 h-5 mr-2" />}
-                    {paused ? 'RESUME' : 'PAUSE'}
+                    {paused ? <Play className="w-4 h-4 mr-2 fill-current" /> : <Pause className="w-4 h-4 mr-2" />}
+                    {paused ? 'Resume' : 'Pause'}
                   </Button>
-                  <Button onClick={addTime} size="lg" variant="outline" className="font-display text-lg px-6 py-6 bg-card/60">
-                    <Plus className="w-5 h-5 mr-1" />
+                  <Button onClick={addTime} variant="outline" size="lg" className="h-12 rounded-xl bg-card/60 px-5 font-semibold">
+                    <Plus className="w-4 h-4 mr-1.5" />
                     10s
                   </Button>
                 </>
               )}
-              <Button
-                onClick={handleRevealNow}
-                size="lg"
-                className="bg-secondary hover:bg-secondary/80 text-secondary-foreground font-display text-xl px-10 py-6"
-              >
-                {showAnswer ? 'SCORE IT' : 'REVEAL ANSWER'}
+              <Button onClick={handleRevealNow} size="lg" className="h-12 rounded-xl px-7 text-base font-bold">
+                {showAnswer ? (
+                  <>
+                    Score it <ArrowRight className="w-4 h-4 ml-2" />
+                  </>
+                ) : (
+                  <>
+                    <Eye className="w-4 h-4 mr-2" /> Reveal answer
+                  </>
+                )}
               </Button>
             </motion.div>
-            <p className="mt-6 text-xs text-muted-foreground hidden md:block">
-              Space: pause · +: add 10s · Enter: {showAnswer ? 'go to scoring' : 'reveal answer'}
+            <p className="mt-5 text-xs text-muted-foreground hidden md:block">
+              Space pause · + add 10s · Enter {showAnswer ? 'go to scoring' : 'reveal answer'}
             </p>
           </div>
         </motion.div>

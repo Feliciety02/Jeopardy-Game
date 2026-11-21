@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/readme/banner.svg" width="1200" alt="Quiz Showdown logo and name on a deep blue stage gradient, with a small game board of gold point values and two team scores">
+  <img src="docs/readme/banner.svg" width="1200" alt="Quiz Showdown logo and name on a dark dotted stage lit coral and sky blue, with a small game board, a lime highlighted tile, and two team scores">
 </p>
 
 <h1 align="center">Quiz Showdown</h1>
@@ -36,16 +36,16 @@ The board has six categories and three point values (100, 500, 1000), for 18 que
   </tr>
 </table>
 
-Sound effects are generated in the browser, so there are no audio files to load. A leading team gets a crown, and a team that answers correctly twice in a row shows a streak. When the last tile is scored, a final screen announces the winner.
+Sound effects are generated in the browser, so there are no audio files to load. Team 1 is always coral and Team 2 is always sky blue, so the room can tell at a glance whose points are whose. The leading team gets a **Leading** badge, a team that answers correctly twice in a row shows a streak, and each category header shows how many of its tiles are left. When the last tile is scored, a final screen announces the winner.
 
 ## Game tour
 
-These are **PNGs captured from the local dev server in headless Microsoft Edge** at 1280 × 860 on November 22, 2026. The phone view is 390 × 844 at 2× and is cropped to the board. Scores in the mid-game shots were set up for the capture. Select any image to open it at full size.
+These are **PNGs captured from the local dev server in headless Microsoft Edge** at 1280 × 860 on November 22, 2026 (the new-game view is 1440 × 900). The phone view is 390 × 844 at 2× and is cropped to the board. Scores in the mid-game shots were set up for the capture. Select any image to open it at full size.
 
 <table>
   <tr>
     <td align="center"><a href="docs/quiz-showdown.png"><img src="docs/quiz-showdown.png" width="260" alt="Fresh board with both teams at zero and all 18 tiles open"></a><br><strong>1 · New game</strong><br><sub>All 18 tiles open</sub></td>
-    <td align="center"><a href="docs/screenshots/01-board.png"><img src="docs/screenshots/01-board.png" width="260" alt="Board mid-game with Team 1 leading 1500 to 600 on a two-answer streak"></a><br><strong>2 · Mid-game</strong><br><sub>Crown, streak, and lead</sub></td>
+    <td align="center"><a href="docs/screenshots/01-board.png"><img src="docs/screenshots/01-board.png" width="260" alt="Board mid-game with Team 1 leading 1500 to 600 on a two-answer streak"></a><br><strong>2 · Mid-game</strong><br><sub>Leading badge, streak, and gap</sub></td>
     <td align="center"><a href="docs/screenshots/02-timer-setup.png"><img src="docs/screenshots/02-timer-setup.png" width="260" alt="Timer setup dialog for a 1000-point question with 20 seconds selected"></a><br><strong>3 · Timer setup</strong><br><sub>Choose the time limit</sub></td>
   </tr>
   <tr>
@@ -81,7 +81,7 @@ flowchart TD
     class E,F,G,S score
 ```
 
-Each scored question is saved to the browser's `localStorage` along with the team names, timer length, and an undo history of the last 50 rounds. **Undo** restores the scores and board exactly as they were before the last scoring. **Reset Game** clears scores and tiles but keeps team names. The mute setting is saved separately.
+Each scored question is saved to the browser's `localStorage` along with the team names, timer length, and an undo history of the last 50 rounds. **Undo** restores the scores and board exactly as they were before the last scoring. **New game** clears scores and tiles but keeps team names. The mute setting is saved separately.
 
 ## Run it locally
 
@@ -113,7 +113,7 @@ The production copy runs at <http://localhost:4173>. The built files in `dist/` 
 | Game flow | [src/components/JeopardyGame.tsx](src/components/JeopardyGame.tsx) | Phases, scoring rules, autosave, undo, and reset |
 | Screens | [src/components/](src/components/) | Board, timer setup, question, scoring, and scoreboard |
 | Sound | [src/hooks/useSoundEffects.ts](src/hooks/useSoundEffects.ts) | Generated sound effects and the mute setting |
-| Theme | [src/index.css](src/index.css) · [tailwind.config.ts](tailwind.config.ts) | Stage colors, tile styles, and glow effects |
+| Theme | [src/index.css](src/index.css) · [tailwind.config.ts](tailwind.config.ts) | Color tokens, team colors, and tile styles |
 | Screenshots | [docs/screenshots/](docs/screenshots/) | The images used in this README |
 
 ## Hosting the game
@@ -126,7 +126,7 @@ The production copy runs at <http://localhost:4173>. The built files in `dist/` 
 6. Press `Enter` again (or **Score it**) and choose who got it right:
    - **Team 1 / Team 2:** that team gains the points and the other team **loses** the same amount.
    - **Both correct:** both teams gain the points.
-   - **Neither correct:** no change.
+   - **Neither:** no change.
 7. Press `Enter` to go back to the board. Scored the wrong team? Press **Undo**.
 
 ### Keyboard shortcuts
@@ -155,7 +155,7 @@ All categories, questions, and answers are in [`src/data/gameData.ts`](src/data/
 ```
 
 - Give every category one question for each value in `POINT_VALUES` (`[100, 500, 1000]`). To change the values or add a row, edit that list and add a matching question to each category.
-- Keep each `id` unique. Saved progress is matched by `id`, so after a big change, press **Reset Game** to start clean.
+- Keep each `id` unique. Saved progress is matched by `id`, so after a big change, press **New game** to start clean.
 - The board resizes itself to however many categories you add or remove.
 
 ## Scripts

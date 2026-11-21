@@ -26,6 +26,8 @@ const JeopardyBoard = ({ categories, onSelectQuestion, onHover }: JeopardyBoardP
             key={category.id}
             name={category.name}
             index={catIndex}
+            remaining={category.questions.filter((q) => !q.answered).length}
+            total={category.questions.length}
           />
         ))}
 

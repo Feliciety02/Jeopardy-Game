@@ -6,7 +6,7 @@ export const fireConfetti = () => {
     particleCount: 100,
     spread: 70,
     origin: { x: 0.1, y: 0.6 },
-    colors: ['#fbbf24', '#f59e0b', '#d97706', '#60a5fa', '#3b82f6'],
+    colors: ['#d4ff2e', '#f8735a', '#4cb4f9', '#ffffff'],
   });
 
   // Fire from right
@@ -14,7 +14,7 @@ export const fireConfetti = () => {
     particleCount: 100,
     spread: 70,
     origin: { x: 0.9, y: 0.6 },
-    colors: ['#fbbf24', '#f59e0b', '#d97706', '#60a5fa', '#3b82f6'],
+    colors: ['#d4ff2e', '#f8735a', '#4cb4f9', '#ffffff'],
   });
 };
 
@@ -25,7 +25,7 @@ export const fireStars = () => {
     gravity: 0,
     decay: 0.94,
     startVelocity: 30,
-    colors: ['#fbbf24', '#f59e0b', '#d97706'],
+    colors: ['#d4ff2e', '#ffffff'],
   };
 
   confetti({
@@ -54,14 +54,14 @@ export const fireGoldenShower = () => {
       angle: 60,
       spread: 55,
       origin: { x: 0 },
-      colors: ['#fbbf24', '#f59e0b', '#fcd34d'],
+      colors: ['#d4ff2e', '#f8735a', '#4cb4f9'],
     });
     confetti({
       particleCount: 3,
       angle: 120,
       spread: 55,
       origin: { x: 1 },
-      colors: ['#fbbf24', '#f59e0b', '#fcd34d'],
+      colors: ['#d4ff2e', '#f8735a', '#4cb4f9'],
     });
 
     if (Date.now() < end) {

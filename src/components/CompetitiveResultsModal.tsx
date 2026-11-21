@@ -1,16 +1,18 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, Flame, Star, Minus } from 'lucide-react';
+import { Check, CheckCheck, X, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useEffect } from 'react';
+
+type Winner = 'team1' | 'team2' | 'both' | 'none';
 
 interface CompetitiveResultsModalProps {
   isOpen: boolean;
   team1Name: string;
   team2Name: string;
   pointsValue: number;
-  onSelectWinner: (winner: 'team1' | 'team2' | 'both' | 'none') => void;
+  onSelectWinner: (winner: Winner) => void;
   result: {
-    winner: 'team1' | 'team2' | 'both' | 'none';
+    winner: Winner;
     team1Change: number;
     team2Change: number;
     team1NewScore: number;
@@ -18,6 +20,12 @@ interface CompetitiveResultsModalProps {
   } | null;
   onClose: () => void;
 }
+
+const Kbd = ({ children }: { children: React.ReactNode }) => (
+  <kbd className="hidden md:inline-flex h-6 min-w-6 items-center justify-center rounded-md border bg-background/60 px-1.5 text-xs font-semibold text-muted-foreground">
+    {children}
+  </kbd>
+);
 
 const CompetitiveResultsModal = ({
   isOpen,
@@ -38,18 +46,26 @@ const CompetitiveResultsModal = ({
         }
         return;
       }
-      const map: Record<string, 'team1' | 'team2' | 'both' | 'none'> = {
-        '1': 'team1',
-        '2': 'team2',
-        b: 'both',
-        n: 'none',
-      };
+      const map: Record<string, Winner> = { '1': 'team1', '2': 'team2', b: 'both', n: 'none' };
       const winner = map[e.key.toLowerCase()];
       if (winner) onSelectWinner(winner);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [isOpen, result, onSelectWinner, onClose]);
+
+  const teams = [
+    { key: 'team1' as const, name: team1Name, other: team2Name, color: 'var(--team1)', hotkey: '1' },
+    { key: 'team2' as const, name: team2Name, other: team1Name, color: 'var(--team2)', hotkey: '2' },
+  ];
+
+  const headline = !result
+    ? null
+    : result.winner === 'both'
+    ? 'Both teams score'
+    : result.winner === 'none'
+    ? 'No points this round'
+    : `${result.winner === 'team1' ? team1Name : team2Name} takes it`;
 
   return (
     <AnimatePresence>
@@ -58,211 +74,139 @@ const CompetitiveResultsModal = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label={result ? 'Round result' : 'Who answered correctly?'}
         >
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="absolute inset-0 bg-black/90 backdrop-blur-md"
-          />
+          <div className="absolute inset-0 bg-background/85 backdrop-blur-md" />
 
-          {/* Modal */}
           <motion.div
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.5, opacity: 0 }}
-            transition={{ type: 'spring', damping: 20 }}
-            className="relative w-full max-w-4xl max-h-[95vh] overflow-y-auto bg-gradient-to-br from-card via-card to-muted rounded-3xl p-5 sm:p-8 md:p-12 border-4 border-accent overflow-hidden"
+            initial={{ y: 20, opacity: 0, scale: 0.97 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: 20, opacity: 0 }}
+            transition={{ type: 'spring', damping: 22, stiffness: 260 }}
+            className="panel relative w-full max-w-3xl max-h-[95vh] overflow-y-auto p-5 sm:p-8 md:p-10"
           >
-            {/* Decorative elements */}
-            <div className="absolute top-0 left-0 w-32 h-32 bg-primary/20 rounded-full blur-3xl" />
-            <div className="absolute bottom-0 right-0 w-32 h-32 bg-secondary/20 rounded-full blur-3xl" />
-
             {!result ? (
-              // Selection Phase
-              <div className="relative z-10">
-                <motion.div
-                  initial={{ y: -20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  className="text-center mb-10"
-                >
-                  <h2 className="text-3xl md:text-5xl font-display text-foreground text-glow-gold mb-4">
-                    WHO ANSWERED CORRECTLY?
-                  </h2>
-                  <div className="flex items-center justify-center gap-2">
-                    <Star className="w-6 h-6 text-secondary" />
-                    <span className="text-2xl font-display text-secondary">
-                      {pointsValue} POINTS AT STAKE
-                    </span>
-                    <Star className="w-6 h-6 text-secondary" />
-                  </div>
-                </motion.div>
-
-                {/* Selection buttons */}
-                <div className="grid grid-cols-2 gap-3 sm:gap-6 mb-3 sm:mb-6">
-                  <motion.button
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => onSelectWinner('team1')}
-                    className="p-4 sm:p-8 rounded-2xl bg-primary/20 border-4 border-primary hover:bg-primary/30 transition-colors group"
-                  >
-                    <Trophy className="w-12 h-12 mx-auto mb-4 text-primary group-hover:animate-bounce" />
-                    <p className="text-2xl font-display text-primary">{team1Name}</p>
-                    <p className="text-sm text-muted-foreground mt-2">+{pointsValue} pts</p>
-                    <p className="text-xs text-red-400 mt-1">{team2Name} -{pointsValue} pts</p>
-                  </motion.button>
-
-                  <motion.button
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => onSelectWinner('team2')}
-                    className="p-4 sm:p-8 rounded-2xl bg-secondary/20 border-4 border-secondary hover:bg-secondary/30 transition-colors group"
-                  >
-                    <Trophy className="w-12 h-12 mx-auto mb-4 text-secondary group-hover:animate-bounce" />
-                    <p className="text-2xl font-display text-secondary">{team2Name}</p>
-                    <p className="text-sm text-muted-foreground mt-2">+{pointsValue} pts</p>
-                    <p className="text-xs text-red-400 mt-1">{team1Name} -{pointsValue} pts</p>
-                  </motion.button>
+              <div>
+                <div className="text-center">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                    {pointsValue} points at stake
+                  </p>
+                  <h2 className="mt-2 font-display text-3xl sm:text-5xl font-extrabold">Who got it right?</h2>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 sm:gap-6">
-                  <motion.button
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.98 }}
+                <div className="mt-7 grid grid-cols-2 gap-3 sm:gap-4">
+                  {teams.map((t) => (
+                    <motion.button
+                      key={t.key}
+                      whileHover={{ y: -3 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => onSelectWinner(t.key)}
+                      className="group relative overflow-hidden rounded-2xl border-2 p-4 sm:p-6 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      style={{ borderColor: `hsl(${t.color} / 0.55)`, background: `hsl(${t.color} / 0.08)` }}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span
+                          className="grid h-9 w-9 sm:h-10 sm:w-10 place-items-center rounded-xl text-primary-foreground"
+                          style={{ background: `hsl(${t.color})` }}
+                        >
+                          <Check className="h-5 w-5" strokeWidth={3} />
+                        </span>
+                        <Kbd>{t.hotkey}</Kbd>
+                      </div>
+                      <p className="mt-4 font-display text-xl sm:text-3xl font-extrabold truncate" style={{ color: `hsl(${t.color})` }}>
+                        {t.name}
+                      </p>
+                      <p className="mt-1 text-xs sm:text-sm font-semibold tabular-nums text-foreground">+{pointsValue}</p>
+                      <p className="text-[11px] sm:text-xs tabular-nums text-muted-foreground truncate">
+                        {t.other} −{pointsValue}
+                      </p>
+                    </motion.button>
+                  ))}
+                </div>
+
+                <div className="mt-3 sm:mt-4 grid grid-cols-2 gap-3 sm:gap-4">
+                  <button
                     onClick={() => onSelectWinner('both')}
-                    className="p-6 rounded-2xl bg-accent/20 border-4 border-accent hover:bg-accent/30 transition-colors"
+                    className="flex items-center justify-between gap-2 rounded-xl border bg-secondary/60 px-4 py-3 sm:py-4 text-left transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <Flame className="w-8 h-8 text-accent" />
-                      <span className="text-xl font-display text-accent">BOTH CORRECT</span>
-                      <Flame className="w-8 h-8 text-accent" />
-                    </div>
-                    <p className="text-sm text-muted-foreground">Both teams +{pointsValue} pts</p>
-                  </motion.button>
-
-                  <motion.button
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.98 }}
+                    <span className="flex items-center gap-2.5 min-w-0">
+                      <CheckCheck className="h-5 w-5 shrink-0 text-success" />
+                      <span className="min-w-0">
+                        <span className="block text-sm sm:text-base font-semibold">Both correct</span>
+                        <span className="block text-[11px] sm:text-xs text-muted-foreground">Each team +{pointsValue}</span>
+                      </span>
+                    </span>
+                    <Kbd>B</Kbd>
+                  </button>
+                  <button
                     onClick={() => onSelectWinner('none')}
-                    className="p-6 rounded-2xl bg-muted/50 border-4 border-muted-foreground/30 hover:bg-muted transition-colors"
+                    className="flex items-center justify-between gap-2 rounded-xl border bg-secondary/60 px-4 py-3 sm:py-4 text-left transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <Minus className="w-8 h-8 text-muted-foreground" />
-                      <span className="text-xl font-display text-muted-foreground">NEITHER CORRECT</span>
-                      <Minus className="w-8 h-8 text-muted-foreground" />
-                    </div>
-                    <p className="text-sm text-muted-foreground">No points awarded</p>
-                  </motion.button>
+                    <span className="flex items-center gap-2.5 min-w-0">
+                      <X className="h-5 w-5 shrink-0 text-muted-foreground" />
+                      <span className="min-w-0">
+                        <span className="block text-sm sm:text-base font-semibold">Neither</span>
+                        <span className="block text-[11px] sm:text-xs text-muted-foreground">No change</span>
+                      </span>
+                    </span>
+                    <Kbd>N</Kbd>
+                  </button>
                 </div>
-                <p className="mt-6 text-center text-xs text-muted-foreground hidden md:block">
-                  Keys: 1 = {team1Name} · 2 = {team2Name} · B = both · N = neither
-                </p>
               </div>
             ) : (
-              // Results Phase
-              <div className="relative z-10">
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: 'spring', damping: 15 }}
-                  className="text-center mb-8"
+              <div>
+                <motion.h2
+                  initial={{ y: 10, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  className="text-center font-display text-3xl sm:text-5xl font-extrabold"
                 >
-                  <h2 className="text-3xl md:text-5xl font-display text-foreground text-glow-gold mb-2">
-                    {result.winner === 'both'
-                      ? '🎉 BOTH TEAMS WIN! 🎉'
-                      : result.winner === 'none'
-                      ? 'NO WINNERS'
-                      : `🏆 ${result.winner === 'team1' ? team1Name : team2Name} WINS! 🏆`}
-                  </h2>
-                </motion.div>
+                  {headline}
+                </motion.h2>
 
-                {/* Score changes */}
-                <div className="grid grid-cols-2 gap-3 sm:gap-8 mb-8 sm:mb-10">
-                  {/* Team 1 result */}
-                  <motion.div
-                    initial={{ x: -100, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: 0.2 }}
-                    className={`p-6 rounded-2xl border-4 ${
-                      result.team1Change > 0
-                        ? 'bg-green-500/20 border-green-500'
-                        : result.team1Change < 0
-                        ? 'bg-red-500/20 border-red-500'
-                        : 'bg-muted/50 border-muted'
-                    }`}
-                  >
-                    <p className="text-xl font-display text-foreground mb-2">{team1Name}</p>
-                    <motion.p
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ delay: 0.4, type: 'spring' }}
-                      className={`text-4xl font-display ${
-                        result.team1Change > 0
-                          ? 'text-green-400'
-                          : result.team1Change < 0
-                          ? 'text-red-400'
-                          : 'text-muted-foreground'
-                      }`}
-                    >
-                      {result.team1Change > 0 ? '+' : ''}
-                      {result.team1Change}
-                    </motion.p>
-                    <p className="text-muted-foreground mt-2">
-                      New Total: <span className="text-foreground font-bold">{result.team1NewScore}</span>
-                    </p>
-                  </motion.div>
-
-                  {/* Team 2 result */}
-                  <motion.div
-                    initial={{ x: 100, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: 0.2 }}
-                    className={`p-6 rounded-2xl border-4 ${
-                      result.team2Change > 0
-                        ? 'bg-green-500/20 border-green-500'
-                        : result.team2Change < 0
-                        ? 'bg-red-500/20 border-red-500'
-                        : 'bg-muted/50 border-muted'
-                    }`}
-                  >
-                    <p className="text-xl font-display text-foreground mb-2">{team2Name}</p>
-                    <motion.p
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ delay: 0.4, type: 'spring' }}
-                      className={`text-4xl font-display ${
-                        result.team2Change > 0
-                          ? 'text-green-400'
-                          : result.team2Change < 0
-                          ? 'text-red-400'
-                          : 'text-muted-foreground'
-                      }`}
-                    >
-                      {result.team2Change > 0 ? '+' : ''}
-                      {result.team2Change}
-                    </motion.p>
-                    <p className="text-muted-foreground mt-2">
-                      New Total: <span className="text-foreground font-bold">{result.team2NewScore}</span>
-                    </p>
-                  </motion.div>
+                <div className="mt-7 grid grid-cols-2 gap-3 sm:gap-4">
+                  {teams.map((t, i) => {
+                    const change = t.key === 'team1' ? result.team1Change : result.team2Change;
+                    const total = t.key === 'team1' ? result.team1NewScore : result.team2NewScore;
+                    return (
+                      <motion.div
+                        key={t.key}
+                        initial={{ y: 16, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={{ delay: 0.1 + i * 0.08 }}
+                        className="rounded-2xl border bg-background/50 p-4 sm:p-6"
+                        style={{ borderColor: change > 0 ? `hsl(${t.color} / 0.7)` : undefined }}
+                      >
+                        <p className="flex items-center gap-2 text-sm font-semibold text-muted-foreground truncate">
+                          <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: `hsl(${t.color})` }} />
+                          {t.name}
+                        </p>
+                        <motion.p
+                          initial={{ scale: 0.8, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          transition={{ delay: 0.25 + i * 0.08, type: 'spring' }}
+                          className={`mt-2 font-display text-4xl sm:text-5xl font-extrabold tabular-nums ${
+                            change > 0 ? 'text-success' : change < 0 ? 'text-destructive' : 'text-muted-foreground'
+                          }`}
+                        >
+                          {change > 0 ? '+' : change < 0 ? '−' : '±'}
+                          {Math.abs(change)}
+                        </motion.p>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          Total <span className="font-bold tabular-nums text-foreground">{total}</span>
+                        </p>
+                      </motion.div>
+                    );
+                  })}
                 </div>
 
-                {/* Continue button */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.6 }}
-                  className="text-center"
-                >
-                  <Button
-                    onClick={onClose}
-                    size="lg"
-                    className="bg-accent hover:bg-accent/80 text-accent-foreground font-display text-2xl px-12 py-8"
-                  >
-                    CONTINUE
+                <div className="mt-8 flex justify-center">
+                  <Button onClick={onClose} size="lg" className="h-12 rounded-xl px-8 text-base font-bold">
+                    Back to the board <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
-                </motion.div>
+                </div>
               </div>
             )}
           </motion.div>
